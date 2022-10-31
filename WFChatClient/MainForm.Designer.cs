@@ -81,6 +81,7 @@ namespace WinFormClient
             this.tbSend.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSend.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystem;
             this.tbSend.Location = new System.Drawing.Point(0, 233);
             this.tbSend.MaxLength = 250;
             this.tbSend.Multiline = true;

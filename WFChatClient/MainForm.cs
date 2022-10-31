@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
 namespace WinFormClient
 {
     public partial class mainForm : Form
@@ -87,7 +89,7 @@ namespace WinFormClient
 
         internal void bLogin_Click(object sender, EventArgs e)
         {
-            
+
             string check = DataBaseSQL.AuthorizeDB();
             if (check == "OK")
             {
@@ -172,10 +174,12 @@ namespace WinFormClient
 
         private void tbSend_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
+            switch (e.KeyCode)
             {
-                e.SuppressKeyPress = true;
-                bSend_Click(sender, e);
+                case Keys.Enter:
+                    e.SuppressKeyPress = true; //avoid new line
+                    bSend_Click(sender, e);
+                    break;
             }
         }
 

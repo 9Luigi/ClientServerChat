@@ -41,7 +41,7 @@ namespace WinFormClient
                         MessageBox.Show("Succesful");
                         fClientSettings.ActiveForm.Close();
                     }
-                    catch(Exception ex)
+                    catch
                     {
                         MessageBox.Show("Cannot save settings, try to reload application");
                     }

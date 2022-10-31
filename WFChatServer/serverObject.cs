@@ -7,17 +7,18 @@ using System.Net;
 using System.Threading;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization.Formatters;
 
 namespace WFChatServer
 {
     public class ServerObject
     {
-        static TcpListener listener;
+        internal static TcpListener listener { get; private set; }
         public List<ClientObject> clients = new List<ClientObject>();
-        IPAddress IPAddr;
-        int port;
-        BinaryFormatter bf;
-        FileStream fs;
+        internal IPAddress IPAddr;
+        internal int port;
+        internal BinaryFormatter bf { get; private set; }
+        internal FileStream fs { get; private set; }
 
         internal void AddConnection(ClientObject client)
         {
