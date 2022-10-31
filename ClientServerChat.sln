@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WFChatServer", "WFChatServer\WFChatServer.csproj", "{9613C11C-5AE1-403F-9221-4DB65DC8A49E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WFChatClient", "WFChatClient\WFChatClient.csproj", "{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Alpha 1.0|Any CPU = Alpha 1.0|Any CPU
+		Chat client alpha 1.0|Any CPU = Chat client alpha 1.0|Any CPU
+		Chat server Alpha 1.0|Any CPU = Chat server Alpha 1.0|Any CPU
+		Chat server-client alpha 1.0|Any CPU = Chat server-client alpha 1.0|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Alpha 1.0|Any CPU.ActiveCfg = Release|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Alpha 1.0|Any CPU.Build.0 = Release|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Chat client alpha 1.0|Any CPU.ActiveCfg = Chat server-client alpha 1.0|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Chat client alpha 1.0|Any CPU.Build.0 = Chat server-client alpha 1.0|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Chat server Alpha 1.0|Any CPU.ActiveCfg = Chat server Alpha 1.0|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Chat server Alpha 1.0|Any CPU.Build.0 = Chat server Alpha 1.0|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Chat server-client alpha 1.0|Any CPU.ActiveCfg = Chat server-client alpha 1.0|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Chat server-client alpha 1.0|Any CPU.Build.0 = Chat server-client alpha 1.0|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9613C11C-5AE1-403F-9221-4DB65DC8A49E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Alpha 1.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Alpha 1.0|Any CPU.Build.0 = Debug|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Chat client alpha 1.0|Any CPU.ActiveCfg = Chat client alpha 1.0|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Chat client alpha 1.0|Any CPU.Build.0 = Chat client alpha 1.0|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Chat server Alpha 1.0|Any CPU.ActiveCfg = Chat client alpha 1.0|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Chat server Alpha 1.0|Any CPU.Build.0 = Chat client alpha 1.0|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Chat server-client alpha 1.0|Any CPU.ActiveCfg = Chat server-client alpha 1.0|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Chat server-client alpha 1.0|Any CPU.Build.0 = Chat server-client alpha 1.0|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6783F2B-5BD0-4FAC-A36F-13A4EA906289}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {672B031A-B797-48E5-BEEA-65A1F44DE2D0}
+	EndGlobalSection
+EndGlobal
