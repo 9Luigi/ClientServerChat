@@ -177,8 +177,15 @@ namespace WinFormClient
             switch (e.KeyCode)
             {
                 case Keys.Enter:
-                    e.SuppressKeyPress = true; //avoid new line
+                    e.SuppressKeyPress = true; //avoid new line(key realese event(?))
                     bSend_Click(sender, e);
+                    break;
+                case Keys.Back:
+                    e.SuppressKeyPress = true;
+                    if (tbSend.SelectionStart > 0)
+                    {
+                        SendKeys.Send("+{LEFT}{DEL}"); //delete a word with ctrl+backspace, don't undestand how yet
+                    }
                     break;
             }
         }

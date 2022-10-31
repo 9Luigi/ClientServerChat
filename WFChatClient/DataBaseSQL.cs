@@ -8,7 +8,8 @@ namespace WinFormClient
         static internal string AuthorizeDB()
         {
             TextBox tbUsername = Application.OpenForms["MainForm"].Controls["tbUsername"] as TextBox;
-            TextBox tbPassword = Application.OpenForms["MainForm"].Controls["tbPassword"] as TextBox;
+            TextBox tbPassword = Application.OpenForms["MainForm"].Controls["tbPassword"] as TextBox; 
+            //TODO values have to be set in Server app and answer have to send to client, many ways, need to think
             try
             {
                 string connectionString = @"Data Source=192.168.1.1,1433;Initial Catalog=DBUsers;User ID = Admin;Password = Admin;";
