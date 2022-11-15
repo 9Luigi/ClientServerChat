@@ -7,7 +7,8 @@ namespace WinFormClient
     {
         static internal string AuthorizeDB()
         {
-            TextBox tbUsername = Application.OpenForms["MainForm"].Controls["tbUsername"] as TextBox;
+            return "OK";
+            /*TextBox tbUsername = Application.OpenForms["MainForm"].Controls["tbUsername"] as TextBox;
             TextBox tbPassword = Application.OpenForms["MainForm"].Controls["tbPassword"] as TextBox; 
             //TODO values have to be set in Server app and answer have to send to client, many ways, need to think
             try
@@ -48,7 +49,7 @@ namespace WinFormClient
             {
                 MessageBox.Show(ex.Message);
                 return "Error"; 
-            }
+            }*/
         }
     }
 }

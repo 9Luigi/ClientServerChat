@@ -69,10 +69,9 @@ namespace WFChatServer
                 mtbIPAddress.Text = desSettings.ipaddr.ToString();
                 mtbPort.Text = desSettings.port.ToString();
             }
-            catch
+            catch(Exception ex)
             {
-                mtbIPAddress.Text = "192.168.1.1";
-                mtbPort.Text = "8888";
+                MessageBox.Show(ex.Message);
             }
             finally
             {

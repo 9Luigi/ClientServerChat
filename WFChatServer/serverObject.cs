@@ -8,6 +8,7 @@ using System.Threading;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Formatters;
+using System.Windows.Forms;
 
 namespace WFChatServer
 {
@@ -106,9 +107,13 @@ namespace WFChatServer
             }
             catch
             {
-                IPAddr = IPAddress.Parse("192.168.1.1");
-                port  = 8888;
-                
+                var host = Dns.GetHostName();
+                var ip = Dns.GetHostEntry(host).AddressList[1];
+                IPAddr = ip;
+                port = 8888;
+                fServerSettings.Settings settings = new fServerSettings.Settings(IPAddr,port);
+                bf.Serialize(fs, settings);
+                MessageBox.Show("Cannot load settings, default was set");
             }
             finally
             {

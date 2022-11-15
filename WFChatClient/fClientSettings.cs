@@ -72,7 +72,7 @@ namespace WinFormClient
             }
             catch
             {
-                mtbIPAddress.Text = "192.168.1.1";
+                mtbIPAddress.Text = "192.168.0.5";
                 mtbPort.Text = "8888";
                 MessageBox.Show("Cannot load settings, default values was set");
             }
