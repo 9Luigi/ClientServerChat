@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows.Forms;
 
 namespace WFChatServer
 {
@@ -10,6 +11,8 @@ namespace WFChatServer
         internal string ID { get; private set; }
         internal NetworkStream stream { get; private set; }
         internal string userName { get; private set; }
+        internal string[] userNameAndPassword { get; private set; }
+        internal string password { get; private set; }
         internal TcpClient client { get; private set; }
         internal ServerObject server { get; private set; }
         internal ClientObject(TcpClient client, ServerObject server)
@@ -26,32 +29,44 @@ namespace WFChatServer
                 string messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
                 stream = client.GetStream();
                 string message = GetMessage();
-                userName = message;
-                message = messageSendTime + userName + " entered the chat";
-                server.BrodcastMessage(message, this.ID);
-                Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
-                        message + Environment.NewLine));
-                while (true)
+                userNameAndPassword = message.Split(' ');
+                userName = userNameAndPassword[0];
+                password = userNameAndPassword[1];
+                if (DataBaseSQL.AuthorizeDB(userName, password) == "OK")
                 {
-                    messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
-                    try
+                    message = messageSendTime + userName + " entered the chat";
+                    server.BrodcastMessage(message, this.ID);
+                    Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
+                            message + Environment.NewLine));
+                    while (true)
                     {
-                        message = GetMessage();
-                        message = String.Format("{0}{1}: {2}", messageSendTime, userName, message);
-                        Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
-                        message + Environment.NewLine));
-                        server.BrodcastMessage(message, this.ID);
-                    }
-                    catch (Exception)
-                    {
-                        message = String.Format("{0}{1} lived the chat", messageSendTime , userName);
-                        Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
-                        message + Environment.NewLine));
-                        server.BrodcastMessage(message, this.ID);
-                        break;
-                    }
+                        messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
+                        try
+                        {
+                            message = GetMessage();
+                            message = String.Format("{0}{1}: {2}", messageSendTime, userName, message);
+                            Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
+                            message + Environment.NewLine));
+                            server.BrodcastMessage(message, this.ID);
+                        }
+                        catch (Exception)
+                        {
+                            message = String.Format("{0}{1} lived the chat", messageSendTime, userName);
+                            Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
+                            message + Environment.NewLine));
+                            server.BrodcastMessage(message, this.ID);
+                            break;
+                        }
 
+                    }
                 }
+                else
+                {
+                    server.SendMessage(DataBaseSQL.AuthorizeDB(userName, password), this);
+                    server.RemoveConnection(this.ID);
+                    Close();
+                }
+
             }
             catch (Exception ex)
             {

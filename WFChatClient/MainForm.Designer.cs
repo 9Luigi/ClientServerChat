@@ -119,7 +119,7 @@ namespace WinFormClient
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.Size = new System.Drawing.Size(165, 20);
             this.tbPassword.TabIndex = 10;
-            this.tbPassword.Text = "98ww10RKportal#";
+            this.tbPassword.Text = "Roman112233";
             // 
             // tbUsername
             // 
@@ -128,7 +128,7 @@ namespace WinFormClient
             this.tbUsername.Name = "tbUsername";
             this.tbUsername.Size = new System.Drawing.Size(165, 20);
             this.tbUsername.TabIndex = 9;
-            this.tbUsername.Text = "r_kudrik";
+            this.tbUsername.Text = "Roman";
             // 
             // bLogin
             // 

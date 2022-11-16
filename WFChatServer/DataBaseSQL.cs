@@ -1,29 +1,28 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Windows.Forms;
-namespace WinFormClient
+using WFChatServer;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+
+namespace WFChatServer
 {
     class DataBaseSQL
     {
-        static internal string AuthorizeDB()
+        static internal string AuthorizeDB(string username, string password)
         {
-            return "OK";
-            /*TextBox tbUsername = Application.OpenForms["MainForm"].Controls["tbUsername"] as TextBox;
-            TextBox tbPassword = Application.OpenForms["MainForm"].Controls["tbPassword"] as TextBox; 
-            //TODO values have to be set in Server app and answer have to send to client, many ways, need to think
             try
             {
-                string connectionString = @"Data Source=192.168.1.1,1433;Initial Catalog=DBUsers;User ID = Admin;Password = Admin;";
+                string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\dbRegisteredUsers.mdf;Integrated Security=True";
                 SqlConnection connection = new SqlConnection(connectionString);
                 connection.Open();
 
-                string request = "SELECT COUNT(Username) FROM Users WHERE Username = '"+ tbUsername.Text + "'";
+                string request = "SELECT COUNT(Username) FROM Users WHERE Username = '"+ username + "'";
                 SqlCommand sqlCommand = new SqlCommand(request,connection);
                 int number = (Int32)sqlCommand.ExecuteScalar();
                 
                 if (number>0)
                 {
-                    request = "SELECT COUNT(Username) FROM Users WHERE Username = '" + tbUsername.Text + "' AND Password  =  '" + tbPassword.Text + "'";
+                    request = "SELECT COUNT(Username) FROM Users WHERE Username = '" + username + "' AND Password  =  '" + password + "'";
                     sqlCommand = new SqlCommand(request, connection);
                     number = (Int32)sqlCommand.ExecuteScalar();
                     connection.Close();
@@ -34,22 +33,19 @@ namespace WinFormClient
                     }
                     else
                     {
-                        MessageBox.Show("Incorrect password");
-                        return "Error";
-                       
+                        return "Incorrect password"; 
                     }
                 }
                 else
                 {
-                    MessageBox.Show("User is not found");
-                    return "Error";
+                    return "User is not found";
                 }
             }
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message);
                 return "Error"; 
-            }*/
+            }
         }
     }
 }

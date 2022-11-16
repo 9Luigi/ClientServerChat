@@ -7,7 +7,6 @@ using System.Net;
 using System.Threading;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization.Formatters;
 using System.Windows.Forms;
 
 namespace WFChatServer
@@ -83,7 +82,12 @@ namespace WFChatServer
                 }
             }
         }
+        internal void SendMessage(string message, ClientObject client)
+        {
+            byte[] data = Encoding.Unicode.GetBytes(message);
+            client.stream.Write(data, 0, data.Length);
 
+        }
         internal void Disconnect()
         {
             for (int i = 0; i < clients.Count; i++)
