@@ -7,20 +7,21 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Drawing.Drawing2D;
-using System.Reflection.Emit;
+using System.Threading.Tasks;
 
 namespace WinFormClient
 {
     public partial class mainForm : Form
     {
-        TcpClient client;
-        NetworkStream stream;
-        IPAddress ipAddr;
-        int port;
-        BinaryFormatter bf;
-        FileStream fs;
-        string Username, Password;
+        TcpClient client { get; set; }
+        NetworkStream stream { get; set; }
+        IPAddress ipAddr { get; set; }
+        int port { get; set; }
+        BinaryFormatter bf { get; set; }
+        FileStream fs { get; set; }
+        string Username { get; set; }
+        string Password { get; set; }
+        public string isConnected { get; set; } = "false";
         public mainForm()
         {
             InitializeComponent();
@@ -44,8 +45,7 @@ namespace WinFormClient
         }
         private void recieveMessage() //TODO here
         {
-            
-            StringBuilder builder; 
+            StringBuilder builder;
             int lenght;
             try
             {
@@ -60,19 +60,25 @@ namespace WinFormClient
                 if (builder.ToString() == "User is not found")
                 {
                     Disconnect();
-                    mainForm.ActiveForm.Invoke(new Action(() => MessageBox.Show("User is not found, try again")));
+                    this.Invoke(new Action(() => MessageBox.Show("User is not found, try again")));
+                    Thread currentThread = Thread.CurrentThread;
+                    currentThread.Abort();
                 }
+                else
                 if (builder.ToString() == "Incorrect password")
                 {
                     Disconnect();
-                    mainForm.ActiveForm.Invoke(new Action(() => MessageBox.Show("Incorrect password, try again")));
+                    this.Invoke(new Action(() => MessageBox.Show("Incorrect password, try again")));
+                    Thread currentThread = Thread.CurrentThread;
+                    currentThread.Abort();
                 }
                 else
                 {
-                    mainForm.ActiveForm.Invoke(new Action(() => closeLoginAndOpenChat()));
-                    mainForm.ActiveForm.Invoke(new Action(() => tbRecieve.Text = String.Format("Welcome {0}!", tbUsername.Text)));
+                    isConnected = "true";
+
                     while (true)
                     {
+
                         try
                         {
                             do
@@ -100,12 +106,7 @@ namespace WinFormClient
             }
             catch
             {
-                tbSend.Invoke(new Action(() => tbSend.Enabled = false));
-                bSend.Invoke(new Action(() => bSend.Enabled = false));
-
                 Disconnect();
-                MessageBox.Show("Cannot communicate with server, try again later please");
-                Environment.Exit(0);
             }
         }
         private void Disconnect()
@@ -126,74 +127,63 @@ namespace WinFormClient
             tbRecieve.ScrollToCaret();
         }
 
-        internal void bLogin_Click(object sender, EventArgs e)
+        internal async void bLogin_Click(object sender, EventArgs e)
         {
             Username = tbUsername.Text;
             Password = tbPassword.Text;
-            /*string check = DataBaseSQL.AuthorizeDB();
-            if (check == "OK")
-            {*/ //TODO change login messageboxes
             try
             {
-
                 try
                 {
-                    try
-                    {
-                        bf = new BinaryFormatter();
-                        fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                        fClientSettings.Settings desSettings = (fClientSettings.Settings)bf.Deserialize(fs);
+                    bf = new BinaryFormatter();
+                    fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
+                    fClientSettings.Settings desSettings = (fClientSettings.Settings)bf.Deserialize(fs);
 
 
-                        ipAddr = desSettings.ipAdd;
-                        port = desSettings.port;
-                    }
-                    catch
-                    {
-                        ipAddr = IPAddress.Parse("192.168.0.5");
-                        port = 8888;
-                    }
-                    finally
-                    {
-                        fs.Close();
-                    }
-
-                    client = new TcpClient();
-
-                    client.Connect(ipAddr, port);
-                    stream = client.GetStream();
-                    string message = Username + " " + Password;
-                    byte[] bytes = Encoding.Unicode.GetBytes(message);
-                    stream.Write(bytes, 0, bytes.Length);
-
-                    Thread recieveThread = new Thread(new ThreadStart(recieveMessage));
-                    recieveThread.IsBackground = true;
-                    recieveThread.Start();
-
+                    ipAddr = desSettings.ipAdd;
+                    port = desSettings.port;
                 }
                 catch
                 {
-                    tbSend.Enabled = false;
-                    bSend.Enabled = false;
-
-                    Disconnect();
-                    MessageBox.Show("Cannot communicate with server, try again later please");
-                    Environment.Exit(0);
+                    ipAddr = IPAddress.Parse("192.168.0.5");
+                    port = 8888;
                 }
+                finally
+                {
+                    fs.Close();
+                }
+
+                client = new TcpClient();
+
+                client.Connect(ipAddr, port);
+                stream = client.GetStream();
+                string message = Username + " " + Password;
+                byte[] bytes = Encoding.Unicode.GetBytes(message);
+                stream.Write(bytes, 0, bytes.Length);
+                Thread recieveThread = new Thread(new ThreadStart(recieveMessage));
+                recieveThread.IsBackground = true;
+                recieveThread.Start();
+                await Task.Delay(1000);
+                await Task.Run(() =>
+                {
+                    if (client.Connected)
+                    {
+                        this.Invoke(new Action(() => closeLoginAndOpenChat()));
+                        tbRecieve.Invoke(new Action(() => tbRecieve.Text = String.Format("Welcome {0}!", tbUsername.Text)));
+                    }
+                    
+                });//workaround
+                
             }
             catch
             {
                 tbSend.Enabled = false;
-                tbRecieve.Text += "" + Environment.NewLine;
                 bSend.Enabled = false;
 
                 Disconnect();
-                MessageBox.Show("Login is OK, but server is down, try again later please");
+                MessageBox.Show("Cannot communicate with server, try again later please");
                 Environment.Exit(0);
             }
-
-
-            //}
         }
 
         private void tbSend_KeyDown(object sender, KeyEventArgs e)
