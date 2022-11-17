@@ -8,6 +8,7 @@ using System.Threading;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace WinFormClient
 {
@@ -21,12 +22,12 @@ namespace WinFormClient
         FileStream fs { get; set; }
         string Username { get; set; }
         string Password { get; set; }
-        public string isConnected { get; set; } = "false";
+        Thread recieveThread { get; set; }
         public mainForm()
         {
             InitializeComponent();
         }
-
+        //TODO space can movecoret ~
         private void bSend_Click(object sender, EventArgs e)
         {
             try
@@ -49,57 +50,28 @@ namespace WinFormClient
             int lenght;
             try
             {
-                do
+                while (true)
                 {
-                    byte[] bytes = new byte[256];
-                    builder = new StringBuilder(); //buidler appends buffer bytes from stream until data available in stream 
-                    lenght = stream.Read(bytes, 0, bytes.Length);
-                    builder.Append(Encoding.Unicode.GetString(bytes, 0, lenght));
-                }
-                while (stream.DataAvailable);
-                if (builder.ToString() == "User is not found")
-                {
-                    Disconnect();
-                    this.Invoke(new Action(() => MessageBox.Show("User is not found, try again")));
-                    Thread currentThread = Thread.CurrentThread;
-                    currentThread.Abort();
-                }
-                else
-                if (builder.ToString() == "Incorrect password")
-                {
-                    Disconnect();
-                    this.Invoke(new Action(() => MessageBox.Show("Incorrect password, try again")));
-                    Thread currentThread = Thread.CurrentThread;
-                    currentThread.Abort();
-                }
-                else
-                {
-                    isConnected = "true";
-
-                    while (true)
+                    try
                     {
-
-                        try
+                        do
                         {
-                            do
-                            {
-                                byte[] bytes = new byte[256];
-                                builder = new StringBuilder(); //buidler appends buffer bytes from stream until data available in stream 
-                                lenght = stream.Read(bytes, 0, bytes.Length);
-                                builder.Append(Encoding.Unicode.GetString(bytes, 0, lenght));
-                            }
-                            while (stream.DataAvailable);
-                            tbRecieve.Text += Environment.NewLine + builder.ToString();
+                            byte[] bytes = new byte[256];
+                            builder = new StringBuilder(); //buidler appends buffer bytes from stream until data available in stream 
+                            lenght = stream.Read(bytes, 0, bytes.Length);
+                            builder.Append(Encoding.Unicode.GetString(bytes, 0, lenght));
                         }
-                        catch
-                        {
-                            tbSend.Invoke(new Action(() => tbSend.Enabled = false));
-                            bSend.Invoke(new Action(() => bSend.Enabled = false));
+                        while (stream.DataAvailable);
+                        tbRecieve.Text += Environment.NewLine + builder.ToString();
+                    }
+                    catch
+                    {
+                        tbSend.Invoke(new Action(() => tbSend.Enabled = false));
+                        bSend.Invoke(new Action(() => bSend.Enabled = false));
 
-                            Disconnect();
-                            MessageBox.Show("Cannot communicate with server, try again later please");
-                            Environment.Exit(0);
-                        }
+                        Disconnect();
+                        MessageBox.Show("Cannot communicate with server, try again later please");
+                        Environment.Exit(0);
                     }
                 }
 
@@ -127,12 +99,15 @@ namespace WinFormClient
             tbRecieve.ScrollToCaret();
         }
 
-        internal async void bLogin_Click(object sender, EventArgs e)
+        internal void bLogin_Click(object sender, EventArgs e)
         {
             Username = tbUsername.Text;
             Password = tbPassword.Text;
+            StringBuilder builder;
+            int lenght;
             try
             {
+                #region desirializeSettings
                 try
                 {
                     bf = new BinaryFormatter();
@@ -152,7 +127,7 @@ namespace WinFormClient
                 {
                     fs.Close();
                 }
-
+                #endregion
                 client = new TcpClient();
 
                 client.Connect(ipAddr, port);
@@ -160,20 +135,36 @@ namespace WinFormClient
                 string message = Username + " " + Password;
                 byte[] bytes = Encoding.Unicode.GetBytes(message);
                 stream.Write(bytes, 0, bytes.Length);
-                Thread recieveThread = new Thread(new ThreadStart(recieveMessage));
-                recieveThread.IsBackground = true;
-                recieveThread.Start();
-                await Task.Delay(1000);
-                await Task.Run(() =>
+                do
                 {
-                    if (client.Connected)
-                    {
-                        this.Invoke(new Action(() => closeLoginAndOpenChat()));
-                        tbRecieve.Invoke(new Action(() => tbRecieve.Text = String.Format("Welcome {0}!", tbUsername.Text)));
-                    }
+                    byte[] recieveBytes = new byte[256];
+                    builder = new StringBuilder(); //builder appends buffer bytes from stream until data available in stream 
+                    lenght = stream.Read(recieveBytes, 0, recieveBytes.Length);
+                    builder.Append(Encoding.Unicode.GetString(recieveBytes, 0, lenght));
+                }
+                while (stream.DataAvailable);
+                if (builder.ToString() == "User is not found")
+                {
+                    Disconnect();
+                    this.Invoke(new Action(() => MessageBox.Show("User is not found, try again")));
+                }
+                else
+                if (builder.ToString() == "Incorrect password")
+                {
+                    Disconnect();
+                    this.Invoke(new Action(() => MessageBox.Show("Incorrect password, try again")));
+                }
+                else if(builder.ToString() == "OK")
+                {
                     
-                });//workaround
-                
+                    closeLoginAndOpenChat();
+                    tbRecieve.Text = String.Format("Welcome {0}!", tbUsername.Text);
+
+                    recieveThread = new Thread(new ThreadStart(recieveMessage));
+                    recieveThread.IsBackground = true;
+                    recieveThread.Start();
+
+                }
             }
             catch
             {

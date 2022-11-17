@@ -38,6 +38,7 @@ namespace WFChatServer
                     server.BrodcastMessage(message, this.ID);
                     Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
                             message + Environment.NewLine));
+                    server.SendMessage(DataBaseSQL.AuthorizeDB(userName, password), this);
                     while (true)
                     {
                         messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
@@ -57,7 +58,6 @@ namespace WFChatServer
                             server.BrodcastMessage(message, this.ID);
                             break;
                         }
-
                     }
                 }
                 else
