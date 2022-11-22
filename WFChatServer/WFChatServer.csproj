@@ -83,7 +83,7 @@
   <ItemGroup>
     <Compile Include="clientObject.cs" />
     <Compile Include="controllerObject.cs" />
-    <Compile Include="DataBaseSQL.cs" />
+    <Compile Include="dbHandler.cs" />
     <Compile Include="dbRegisteredUsersDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Windows.Forms;
-using WFChatServer;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace WFChatServer
 {
-    class DataBaseSQL
+    class dbHandler
     {
-        static internal string AuthorizeDB(string username, string password)
+        internal delegate void errorDelegate(string message);
+        internal event errorDelegate errorEvent;
+        internal string AuthorizeDB(string username, string password)
         {
             try
             {
-                string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\dbRegisteredUsers.mdf;Integrated Security=True";
+                string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\dbRegisteredUsers.mdf;Integrated Security=True;Pooling=True";
                 SqlConnection connection = new SqlConnection(connectionString);
                 connection.Open();
 
@@ -43,7 +43,7 @@ namespace WFChatServer
             }
             catch(Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                errorEvent.Invoke(ex.Message);
                 return "Error"; 
             }
         }

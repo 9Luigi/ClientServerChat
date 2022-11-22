@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Text;
+using static System.Windows.Forms.AxHost;
 
 namespace WFChatServer
 {
@@ -20,11 +21,13 @@ namespace WFChatServer
         StreamWriter logWriter;//Log file
         private void fMain_Load(object sender, EventArgs e)
         {
-
+            
             try
             {
                 controller = new ControllerObject();
                 server = new ServerObject();
+                server.dataBaseHandler.errorEvent += showEventMessage;
+                server.listenEvent += describeTheListeningStateOfTheServer;
 
                 listenThread = new Thread(new ThreadStart(server.Listen)); //thread for listen
                 listenThread.IsBackground = true; //thread will close after close main(entry point?) thread
@@ -109,6 +112,14 @@ namespace WFChatServer
         {
             fServerSettings fsettings = new fServerSettings();
             fsettings.Show();
+        }
+        private void showEventMessage(string message)
+        {
+            this.Invoke(new Action(() => MessageBox.Show(message)));
+        }
+        private void describeTheListeningStateOfTheServer(string state)
+        {
+            this.Invoke(new Action(()=>tbController.Text += state));
         }
     }
 }

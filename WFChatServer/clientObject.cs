@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Windows.Forms;
 
 namespace WFChatServer
 {
@@ -15,6 +13,7 @@ namespace WFChatServer
         internal string password { get; private set; }
         internal TcpClient client { get; private set; }
         internal ServerObject server { get; private set; }
+
         internal ClientObject(TcpClient client, ServerObject server)
         {
             ID = Guid.NewGuid().ToString(); //set uniq ID property for each clientOBJ
@@ -32,13 +31,13 @@ namespace WFChatServer
                 userNameAndPassword = message.Split(' ');
                 userName = userNameAndPassword[0];
                 password = userNameAndPassword[1];
-                if (DataBaseSQL.AuthorizeDB(userName, password) == "OK")
+                if (server.dataBaseHandler.AuthorizeDB(userName, password) == "OK")
                 {
                     message = messageSendTime + userName + " entered the chat";
                     server.BrodcastMessage(message, this.ID);
                     Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
                             message + Environment.NewLine));
-                    server.SendMessage(DataBaseSQL.AuthorizeDB(userName, password), this);
+                    server.SendMessage(server.dataBaseHandler.AuthorizeDB(userName, password), this);
                     while (true)
                     {
                         messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
@@ -62,7 +61,7 @@ namespace WFChatServer
                 }
                 else
                 {
-                    server.SendMessage(DataBaseSQL.AuthorizeDB(userName, password), this);
+                    server.SendMessage(server.dataBaseHandler.AuthorizeDB(userName, password), this);
                     server.RemoveConnection(this.ID);
                     Close();
                 }

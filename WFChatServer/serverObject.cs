@@ -19,7 +19,10 @@ namespace WFChatServer
         internal int port;
         internal BinaryFormatter bf { get; private set; }
         internal FileStream fs { get; private set; }
+        internal dbHandler dataBaseHandler = new dbHandler();
 
+        internal  delegate void listenDelegate(string message);
+        internal event listenDelegate listenEvent;
         internal void AddConnection(ClientObject client)
         {
             try
@@ -54,8 +57,7 @@ namespace WFChatServer
                 SelectServer(out IPAddr, out port); //values store in file settings.dat
                 listener = new TcpListener(IPAddr, port);
                 listener.Start(); //listen started
-                Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                        "Server started" + Environment.NewLine));
+                listenEvent.Invoke("Server started");
                 while (true)
                 {
                     TcpClient client = listener.AcceptTcpClient(); //new tcpClient for each client
@@ -67,8 +69,7 @@ namespace WFChatServer
             }
             catch (Exception ex)
             {
-                Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                ex.Message + Environment.NewLine));
+                listenEvent.Invoke(ex.Message);
             }
         }//listen and multi thread accept clients
         internal void BrodcastMessage(string message, string id)
