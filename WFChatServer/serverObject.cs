@@ -23,6 +23,9 @@ namespace WFChatServer
 
         internal  delegate void listenDelegate(string message);
         internal event listenDelegate listenEvent;
+
+        internal delegate void transferDelegate(ClientObject sender, ClientObjectEventArgs e);
+        internal event transferDelegate transferEvent;
         internal void AddConnection(ClientObject client)
         {
             try
@@ -62,6 +65,7 @@ namespace WFChatServer
                 {
                     TcpClient client = listener.AcceptTcpClient(); //new tcpClient for each client
                     ClientObject clientOBJ = new ClientObject(client, this);//is added connected client to collection
+                    clientOBJ.notifacationEvent += TransferDataFromClientObjectToFMain;
                     Thread clientThread = new Thread(new ThreadStart(clientOBJ.Process)); //transfer data beetwen server and each client
                     clientThread.IsBackground = true;
                     clientThread.Start();
@@ -125,6 +129,9 @@ namespace WFChatServer
                 fs.Close();
             }
         }
-
+        void TransferDataFromClientObjectToFMain(ClientObject sender, ClientObjectEventArgs e)
+        {
+            transferEvent.Invoke(sender, e);
+        }
     }
 }

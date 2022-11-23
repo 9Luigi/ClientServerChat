@@ -5,6 +5,7 @@ using System.Threading;
 using System.IO;
 using System.Text;
 using static System.Windows.Forms.AxHost;
+using Microsoft.Win32;
 
 namespace WFChatServer
 {
@@ -12,7 +13,6 @@ namespace WFChatServer
     {
         public fMain()
         {
-            Program.fMainReferense = this; //reference for access controls from another classes in any.cs
             InitializeComponent();
         }
         internal static ServerObject server;
@@ -21,13 +21,14 @@ namespace WFChatServer
         StreamWriter logWriter;//Log file
         private void fMain_Load(object sender, EventArgs e)
         {
-            
+
             try
             {
                 controller = new ControllerObject();
                 server = new ServerObject();
                 server.dataBaseHandler.errorEvent += showEventMessage;
                 server.listenEvent += describeTheListeningStateOfTheServer;
+                server.transferEvent += notifySenderToMainForm;
 
                 listenThread = new Thread(new ThreadStart(server.Listen)); //thread for listen
                 listenThread.IsBackground = true; //thread will close after close main(entry point?) thread
@@ -119,7 +120,22 @@ namespace WFChatServer
         }
         private void describeTheListeningStateOfTheServer(string state)
         {
-            this.Invoke(new Action(()=>tbController.Text += state));
+            this.Invoke(new Action(() => tbController.Text += state));
+        }
+        //TODO bring the top functions (events) in line with notifySenderToMainForm(wich is below)
+        void notifySenderToMainForm(ClientObject sender, ClientObjectEventArgs e)
+        {
+            switch (e.target)
+            {
+                case "tbChatObs":
+                    this.Invoke(new Action(() => tbChatObs.Text += e.message + Environment.NewLine));
+                    break;
+                case "tbController":
+                    this.Invoke(new Action(() => tbController.Text += e.message + Environment.NewLine));
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

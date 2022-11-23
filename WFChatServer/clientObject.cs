@@ -1,9 +1,20 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows.Forms;
 
 namespace WFChatServer
 {
+    public class ClientObjectEventArgs : EventArgs
+    {
+        internal string message { get; private set; }
+        internal string target { get; private set; }
+        public ClientObjectEventArgs(string message, string target)
+        {
+            this.message = message;
+            this.target = target;
+        }
+    }
     public class ClientObject
     {
         internal string ID { get; private set; }
@@ -14,6 +25,8 @@ namespace WFChatServer
         internal TcpClient client { get; private set; }
         internal ServerObject server { get; private set; }
 
+        internal delegate void notifacationDelegate(ClientObject sender, ClientObjectEventArgs e);
+        internal event notifacationDelegate notifacationEvent;
         internal ClientObject(TcpClient client, ServerObject server)
         {
             ID = Guid.NewGuid().ToString(); //set uniq ID property for each clientOBJ
@@ -35,8 +48,7 @@ namespace WFChatServer
                 {
                     message = messageSendTime + userName + " entered the chat";
                     server.BrodcastMessage(message, this.ID);
-                    Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
-                            message + Environment.NewLine));
+                    notifacationEvent.Invoke(this, new ClientObjectEventArgs(message, "tbChatObs"));
                     server.SendMessage(server.dataBaseHandler.AuthorizeDB(userName, password), this);
                     while (true)
                     {
@@ -45,15 +57,13 @@ namespace WFChatServer
                         {
                             message = GetMessage();
                             message = String.Format("{0}{1}: {2}", messageSendTime, userName, message);
-                            Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
-                            message + Environment.NewLine));
+                            notifacationEvent.Invoke(this, new ClientObjectEventArgs(message, "tbChatObs"));
                             server.BrodcastMessage(message, this.ID);
                         }
                         catch (Exception)
                         {
                             message = String.Format("{0}{1} lived the chat", messageSendTime, userName);
-                            Program.fMainReferense.tbChatObs.Invoke(new Action(() => Program.fMainReferense.tbChatObs.Text +=
-                            message + Environment.NewLine));
+                            notifacationEvent.Invoke(this, new ClientObjectEventArgs(message, "tbChatObs"));
                             server.BrodcastMessage(message, this.ID);
                             break;
                         }
@@ -69,8 +79,7 @@ namespace WFChatServer
             }
             catch (Exception ex)
             {
-                Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                        ex.Message + Environment.NewLine));
+                notifacationEvent.Invoke(this, new ClientObjectEventArgs(ex.Message, "tbController"));
             }
             finally
             {
