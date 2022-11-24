@@ -27,8 +27,9 @@ namespace WFChatServer
                 controller = new ControllerObject();
                 server = new ServerObject();
                 server.dataBaseHandler.errorEvent += showEventMessage;
-                server.listenEvent += describeTheListeningStateOfTheServer;
-                server.transferEvent += notifySenderToMainForm;
+                server.serverObjectToFMainFormEvent += notifyFromClientToMainForm;
+                server.transferEvent += notifyFromClientToMainForm;
+                controller.returnCommandEvent += ControllerFunction;
 
                 listenThread = new Thread(new ThreadStart(server.Listen)); //thread for listen
                 listenThread.IsBackground = true; //thread will close after close main(entry point?) thread
@@ -49,7 +50,8 @@ namespace WFChatServer
 
         private void bSend_Click(object sender, EventArgs e)
         {
-            controller.Controller();
+            controller.Controller(tbSendCommand.Text);
+            tbSendCommand.Text = "";
         }
 
         private void tbChatObsAndChatController_Enter(object sender, EventArgs e)
@@ -114,16 +116,16 @@ namespace WFChatServer
             fServerSettings fsettings = new fServerSettings();
             fsettings.Show();
         }
+        #region EventFunctions
         private void showEventMessage(string message)
         {
             this.Invoke(new Action(() => MessageBox.Show(message)));
         }
-        private void describeTheListeningStateOfTheServer(string state)
-        {
-            this.Invoke(new Action(() => tbController.Text += state));
-        }
+    
+
+       
         //TODO bring the top functions (events) in line with notifySenderToMainForm(wich is below)
-        void notifySenderToMainForm(ClientObject sender, ClientObjectEventArgs e)
+        void notifyFromClientToMainForm(ClientObject sender, ClientObjectEventArgs e)
         {
             switch (e.target)
             {
@@ -137,5 +139,72 @@ namespace WFChatServer
                     break;
             }
         }
+        void notifyFromClientToMainForm(serverObjectToFMainEventArgs e)
+        {
+            switch (e.context)
+            {
+                case "tbChatObs":
+                    this.Invoke(new Action(() => tbChatObs.Text += e.message + Environment.NewLine));
+                    break;
+                case "tbController":
+                    this.Invoke(new Action(() => tbController.Text += e.message + Environment.NewLine));
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion
+        #region ChatController
+        void ControllerFunction(commandEventArgs e)
+        {
+            switch (e.message)
+            {
+                case "help":
+                    help();
+                    break;
+                case "users":
+                    clientUserNamesPrint();
+                    break;
+                case "test":
+                    MessageBox.Show("test");
+                    break;
+                case "disconnect":
+                    Environment.Exit(0);
+                    break;
+                default:
+                    tbController.Text += "Enter help to see possible commands list";
+                    break;
+            }
+        }
+        internal void help()
+        {
+            this.Invoke(new Action(() => tbController.Text += String.Format("{0}: {1}", "Exit: ", "Close the application") + Environment.NewLine));
+            this.Invoke(new Action(() => tbController.Text += String.Format("{0}: {1}", "Users: ", "Print users list") + Environment.NewLine));
+        }
+        internal void clientUserNamesPrint()
+        {
+            try
+            {
+
+                if (server.clients.Count > 0)
+                {
+                    for (int i = 0; i < server.clients.Count; i++)
+                    {
+                        /* Program.fMainReferense.tbController.Text = fMain.server.clients[i].userName + Environment.NewLine;*/
+                        this.Invoke(new Action(() => tbController.Text += server.clients[i].userName + Environment.NewLine));
+                    }
+                }
+                else
+                {
+                    /*Program.fMainReferense.tbController.Text += "is empty" + Environment.NewLine;*/
+                    this.Invoke(new Action(() => tbController.Text += "no users are connected" + Environment.NewLine));
+                }
+            }
+            catch
+            {
+
+            }
+        }
+        #endregion
     }
 }

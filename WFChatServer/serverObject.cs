@@ -11,6 +11,16 @@ using System.Windows.Forms;
 
 namespace WFChatServer
 {
+    internal class serverObjectToFMainEventArgs : EventArgs
+    {
+        internal string context { get; private set; }
+        internal string message { get; private set; }
+        public serverObjectToFMainEventArgs(string context,string message)
+        {
+            this.context = context;
+            this.message = message;
+        } 
+    }
     public class ServerObject
     {
         internal static TcpListener listener { get; private set; }
@@ -21,8 +31,8 @@ namespace WFChatServer
         internal FileStream fs { get; private set; }
         internal dbHandler dataBaseHandler = new dbHandler();
 
-        internal  delegate void listenDelegate(string message);
-        internal event listenDelegate listenEvent;
+        internal  delegate void serverObjectToFMainFormDelegate(serverObjectToFMainEventArgs e);
+        internal event serverObjectToFMainFormDelegate serverObjectToFMainFormEvent;
 
         internal delegate void transferDelegate(ClientObject sender, ClientObjectEventArgs e);
         internal event transferDelegate transferEvent;
@@ -34,7 +44,7 @@ namespace WFChatServer
             }
             catch (Exception ex)
             {
-                Program.fMainReferense.tbController.Text += ex.Message + Environment.NewLine;
+                serverObjectToFMainFormEvent.Invoke(new serverObjectToFMainEventArgs("tbController",ex.Message));
             }
         }
         internal void RemoveConnection(string id)
@@ -49,7 +59,7 @@ namespace WFChatServer
             }
             catch (Exception ex)
             {
-                Program.fMainReferense.tbController.Text += ex.Message + Environment.NewLine;
+                serverObjectToFMainFormEvent.Invoke(new serverObjectToFMainEventArgs("tbController", ex.Message));
             }
         }
         internal void Listen()
@@ -60,7 +70,7 @@ namespace WFChatServer
                 SelectServer(out IPAddr, out port); //values store in file settings.dat
                 listener = new TcpListener(IPAddr, port);
                 listener.Start(); //listen started
-                listenEvent.Invoke("Server started");
+                serverObjectToFMainFormEvent.Invoke(new serverObjectToFMainEventArgs("tbChatObs", "server started"));
                 while (true)
                 {
                     TcpClient client = listener.AcceptTcpClient(); //new tcpClient for each client
@@ -73,7 +83,7 @@ namespace WFChatServer
             }
             catch (Exception ex)
             {
-                listenEvent.Invoke(ex.Message);
+                serverObjectToFMainFormEvent.Invoke(new serverObjectToFMainEventArgs("tbController", ex.Message));
             }
         }//listen and multi thread accept clients
         internal void BrodcastMessage(string message, string id)

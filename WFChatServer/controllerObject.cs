@@ -3,67 +3,37 @@ using System.Windows.Forms;
 
 namespace WFChatServer
 {
+    internal class commandEventArgs : EventArgs
+    {
+        internal string message { get; private set; }
+        public commandEventArgs(string message)
+        {
+            this.message = message;
+        }
+    }
     class ControllerObject
     {
-        internal TextBox tbSendCommand = Application.OpenForms["fMain"].Controls["tbSendCommand"] as TextBox;
-        internal void Controller() //handler commands from tbSendCommand
+        internal delegate void returnCommandDelegate(commandEventArgs e);
+        internal event returnCommandDelegate returnCommandEvent;
+        internal void Controller(string command) //handler commands from tbSendCommand
         {
-                string command = tbSendCommand.Text;
-
-                switch (command)
-                {
-                    case "exit":
-                        fMain.server.Disconnect();
-                        break;
-                    case "test":
-                        Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                        "Test" + Environment.NewLine));
-                        break;
-                    case "users":
-                        clientUserNamesPrint();
-                        break;
-                    case "help":
-                        help();
-                        break;
-                    default:
-                        Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                        "type 'help' for commands list" + Environment.NewLine));
-                        break;
-                }
-            tbSendCommand.Text = "";
-        }
-        internal static void help()
-        {
-            Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-            String.Format("{0}: {1}", "exit: ", "Exit") + Environment.NewLine));
-            Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-            String.Format("{0}: {1}", "users: ", "Print users list") + Environment.NewLine)); //workaround(?)
-        }
-        internal void clientUserNamesPrint()
-        {
-            Console.Write("Users list ");
-            try
+            switch (command.ToLower())
             {
-
-                if (fMain.server.clients.Count > 0)
-                {
-                    for (int i = 0; i < fMain.server.clients.Count; i++)
-                    {
-                        /* Program.fMainReferense.tbController.Text = fMain.server.clients[i].userName + Environment.NewLine;*/
-                        Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                        fMain.server.clients[i].userName + Environment.NewLine));
-                    }
-                }
-                else
-                {
-                    /*Program.fMainReferense.tbController.Text += "is empty" + Environment.NewLine;*/
-                    Program.fMainReferense.tbController.Invoke(new Action(() => Program.fMainReferense.tbController.Text +=
-                        "is empty" + Environment.NewLine));
-                }
-            }
-            catch
-            {
-
+                case "exit":
+                    returnCommandEvent.Invoke(new commandEventArgs("disconnect"));
+                    break;
+                case "test":
+                    returnCommandEvent.Invoke(new commandEventArgs("test"));
+                    break;
+                case "users":
+                    returnCommandEvent.Invoke(new commandEventArgs("users"));
+                    break;
+                case "help":
+                    returnCommandEvent.Invoke(new commandEventArgs("help"));
+                    break;
+                default:
+                    returnCommandEvent.Invoke(new commandEventArgs("help"));
+                    break;
             }
         }
     }

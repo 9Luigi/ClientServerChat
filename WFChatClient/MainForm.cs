@@ -42,6 +42,8 @@ namespace WinFormClient
             {
                 tbRecieve.Text += ex.Message;
                 Disconnect();
+                MessageBox.Show("Cannot communicate with server, try again later please");
+                Environment.Exit(0);
             }
         }
         private void recieveMessage()
@@ -66,8 +68,8 @@ namespace WinFormClient
                     }
                     catch
                     {
-                        tbSend.Invoke(new Action(() => tbSend.Enabled = false));
-                        bSend.Invoke(new Action(() => bSend.Enabled = false));
+                        this.Invoke(new Action(() => tbSend.Enabled = false));
+                        this.Invoke(new Action(() => bSend.Enabled = false));
 
                         Disconnect();
                         MessageBox.Show("Cannot communicate with server, try again later please");
@@ -79,6 +81,8 @@ namespace WinFormClient
             catch
             {
                 Disconnect();
+                MessageBox.Show("Cannot communicate with server, try again later please");
+                Environment.Exit(0);
             }
         }
         private void Disconnect()
