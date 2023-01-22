@@ -113,11 +113,11 @@ namespace WinFormClient
             int lenght;
             try
             {
-                #region desirializeSettingsxmlSerializer = new XmlSerializer(typeof(Settings));
-                fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+                #region desirializeSettings
                 try
                 {
-                    
+                    xmlSerializer = new XmlSerializer(typeof(Settings));
+                    fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
                     FClientSettings.Settings desSettings = (FClientSettings.Settings)xmlSerializer.Deserialize(fs);
 
 
