@@ -3,26 +3,30 @@ using System.Windows.Forms;
 using System.Net;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml.Serialization;
+using System.Xml;
+
 namespace WinFormClient
 {
-    public partial class fClientSettings : Form
+    public partial class FClientSettings : Form
     {
         [Serializable]
         public class Settings
         {
-            public int port { get; private set; }
-            public IPAddress ipAdd { get; private set; }
-            public Settings(int port, IPAddress ipAdd)
+            public int port {  get;  set; }
+            public string ipAdd { get;  set; }
+            public Settings(int port, string ipAdd)
             {
                 this.port = port;
                 this.ipAdd = ipAdd;
             }
+            public Settings() { }
         }
-        public fClientSettings()
+        public FClientSettings()
         {
             InitializeComponent();
         }
-        BinaryFormatter bf;
+        XmlSerializer xmlSerializer;
         FileStream fs;
         private void bSaveSettings_Click(object sender, EventArgs e)
         {
@@ -30,16 +34,16 @@ namespace WinFormClient
             {
                 try
                 {
-                    Settings settings = new Settings(Convert.ToInt32(mtbPort.Text), IPAddress.Parse(mtbIPAddress.Text));
+                    Settings settings = new Settings(Convert.ToInt32(mtbPort.Text), mtbIPAddress.Text);
                     try
                     {
-                        bf = new BinaryFormatter();
-                        fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                        bf.Serialize(fs, settings);
-                        
+                        xmlSerializer = new XmlSerializer(typeof(Settings));
+                        fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+                        xmlSerializer.Serialize(fs, settings);
+
                         fs.Close();
                         MessageBox.Show("Succesful");
-                        fClientSettings.ActiveForm.Close();
+                        FClientSettings.ActiveForm.Close();
                     }
                     catch
                     {
@@ -60,13 +64,12 @@ namespace WinFormClient
 
         private void fSettings_Load(object sender, EventArgs e)
         {
+            xmlSerializer = new XmlSerializer(typeof(Settings));
+            fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
             try
             {
-                bf = new BinaryFormatter();
-                fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                Settings desSettings = (Settings)bf.Deserialize(fs);
+                Settings desSettings = (Settings)xmlSerializer.Deserialize(fs);
 
-                
                 mtbIPAddress.Text = desSettings.ipAdd.ToString();
                 mtbPort.Text = desSettings.port.ToString();
             }

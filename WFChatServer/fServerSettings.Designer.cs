@@ -1,7 +1,7 @@
 ﻿
 namespace WFChatServer
 {
-    partial class fServerSettings
+    partial class FServerSettings
     {
         /// <summary>
         /// Required designer variable.

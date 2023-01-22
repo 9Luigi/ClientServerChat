@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace WFChatServer
 {
-    class dbHandler
+    class DBHandler
     {
         internal delegate void errorDelegate(string message);
         internal event errorDelegate errorEvent;

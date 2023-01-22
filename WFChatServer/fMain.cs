@@ -9,9 +9,9 @@ using Microsoft.Win32;
 
 namespace WFChatServer
 {
-    public partial class fMain : Form
+    public partial class FMain : Form
     {
-        public fMain()
+        public FMain()
         {
             InitializeComponent();
         }
@@ -113,7 +113,7 @@ namespace WFChatServer
 
         private void bSettings_Click(object sender, EventArgs e)
         {
-            fServerSettings fsettings = new fServerSettings();
+            FServerSettings fsettings = new FServerSettings();
             fsettings.Show();
         }
         #region EventFunctions

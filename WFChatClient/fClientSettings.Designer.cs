@@ -1,7 +1,7 @@
 ﻿
 namespace WinFormClient
 {
-    partial class fClientSettings
+    partial class FClientSettings
     {
         /// <summary>
         /// Required designer variable.

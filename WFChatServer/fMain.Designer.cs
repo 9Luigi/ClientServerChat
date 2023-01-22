@@ -1,7 +1,7 @@
 ﻿
 namespace WFChatServer
 {
-    partial class fMain
+    partial class FMain
     {
         /// <summary>
         /// Required designer variable.

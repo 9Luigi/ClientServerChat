@@ -9,6 +9,8 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Xml.Serialization;
+using WinFormClient.Properties;
 
 namespace WinFormClient
 {
@@ -18,7 +20,7 @@ namespace WinFormClient
         NetworkStream stream { get; set; }
         IPAddress ipAddr { get; set; }
         int port { get; set; }
-        BinaryFormatter bf { get; set; }
+        XmlSerializer xmlSerializer { get; set; }
         FileStream fs { get; set; }
         string Username { get; set; }
         string Password { get; set; }
@@ -114,12 +116,12 @@ namespace WinFormClient
                 #region desirializeSettings
                 try
                 {
-                    bf = new BinaryFormatter();
+                    xmlSerializer = new XmlSerializer(typeof(Settings));
                     fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                    fClientSettings.Settings desSettings = (fClientSettings.Settings)bf.Deserialize(fs);
+                    FClientSettings.Settings desSettings = (FClientSettings.Settings)xmlSerializer.Deserialize(fs);
 
 
-                    ipAddr = desSettings.ipAdd;
+                    ipAddr = IPAddress.Parse(desSettings.ipAdd);
                     port = desSettings.port;
                 }
                 catch
@@ -211,7 +213,7 @@ namespace WinFormClient
 
         private void bChangeServer_Click(object sender, EventArgs e)
         {
-            fClientSettings fsettings = new fClientSettings();
+            FClientSettings fsettings = new FClientSettings();
             fsettings.ShowDialog();
         }
         internal void closeLoginAndOpenChat()

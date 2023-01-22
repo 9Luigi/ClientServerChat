@@ -3,26 +3,29 @@ using System.Windows.Forms;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Net;
+using System.Xml.Serialization;
+
 namespace WFChatServer
 {
-    public partial class fServerSettings : Form
+    public partial class FServerSettings : Form
     {
-        public fServerSettings()
+        public FServerSettings()
         {
             InitializeComponent();
         }
         [Serializable]
-        internal class Settings
+        public class Settings
         {
-            public IPAddress ipaddr;
-            public int port;
-            public Settings(IPAddress ipaddr, int port)
+            public string ipaddr { get; set; }
+            public int port { get; set; }
+            public Settings(string ipaddr, int port)
             {
                 this.ipaddr = ipaddr;
                 this.port = port;
             }
+            public Settings() { }
         }
-        BinaryFormatter bf;
+        XmlSerializer xmlSerializer;
         FileStream fs;
         private void bSaveSettings_Click(object sender, EventArgs e)
         {
@@ -30,16 +33,16 @@ namespace WFChatServer
             {
                 try
                 {
-                    Settings settings = new Settings( IPAddress.Parse(mtbIPAddress.Text), Convert.ToInt32(mtbPort.Text));
+                    Settings settings = new Settings(mtbIPAddress.Text, Convert.ToInt32(mtbPort.Text));
                     try
                     {
-                        bf = new BinaryFormatter();
-                        fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                        bf.Serialize(fs, settings);
+                        xmlSerializer = new XmlSerializer(typeof(FServerSettings.Settings) );
+                        fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+                        xmlSerializer.Serialize(fs, settings);
                         fs.Close();
                         
                         MessageBox.Show("Succesful, reload the application for the changes to take effect");
-                        fServerSettings.ActiveForm.Close();
+                        FServerSettings.ActiveForm.Close();
                     }
                     catch(Exception ex)
                     {
@@ -59,11 +62,11 @@ namespace WFChatServer
         }
     private void fSettings_Load(object sender, EventArgs e)
         {
+            xmlSerializer = new XmlSerializer(typeof(FServerSettings.Settings) );
+            fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
             try
             {
-                bf = new BinaryFormatter();
-                fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                Settings desSettings = (Settings)bf.Deserialize(fs);
+                Settings desSettings = (Settings)xmlSerializer.Deserialize(fs);
 
                 
                 mtbIPAddress.Text = desSettings.ipaddr.ToString();

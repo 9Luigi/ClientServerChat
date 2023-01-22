@@ -8,6 +8,9 @@ using System.Threading;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using System.Security.Cryptography.X509Certificates;
+using System.Xml.Serialization;
+using WFChatServer.Properties;
 
 namespace WFChatServer
 {
@@ -25,11 +28,11 @@ namespace WFChatServer
     {
         internal static TcpListener listener { get; private set; }
         public List<ClientObject> clients = new List<ClientObject>();
-        internal IPAddress IPAddr;
+        internal string IPAddr;
         internal int port;
-        internal BinaryFormatter bf { get; private set; }
+        internal XmlSerializer xmlSerializer { get; set; }
         internal FileStream fs { get; private set; }
-        internal dbHandler dataBaseHandler = new dbHandler();
+        internal DBHandler dataBaseHandler = new DBHandler();
 
         internal  delegate void serverObjectToFMainFormDelegate(serverObjectToFMainEventArgs e);
         internal event serverObjectToFMainFormDelegate serverObjectToFMainFormEvent;
@@ -67,8 +70,8 @@ namespace WFChatServer
            
             try
             {
-                SelectServer(out IPAddr, out port); //values store in file settings.dat
-                listener = new TcpListener(IPAddr, port);
+                SelectServer(out IPAddr, out port); //values store in file settings.xml
+                listener = new TcpListener(IPAddress.Parse(IPAddr), port);
                 listener.Start(); //listen started
                 serverObjectToFMainFormEvent.Invoke(new serverObjectToFMainEventArgs("tbChatObs", "server started"));
                 while (true)
@@ -112,14 +115,13 @@ namespace WFChatServer
             listener.Stop();
             Environment.Exit(0);
         }
-        internal void SelectServer(out IPAddress IPAddr, out int port)
+        internal void SelectServer(out string IPAddr, out int port)
         {
+            xmlSerializer = new XmlSerializer(typeof(FServerSettings.Settings) );
+            fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
             try
             {
-                bf = new BinaryFormatter();
-                fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
-                fServerSettings.Settings desSettings = (fServerSettings.Settings)bf.Deserialize(fs);
-                
+                FServerSettings.Settings desSettings = (FServerSettings.Settings)xmlSerializer.Deserialize(fs);
 
                 IPAddr = desSettings.ipaddr;
                 port = desSettings.port;
@@ -127,11 +129,11 @@ namespace WFChatServer
             catch
             {
                 var host = Dns.GetHostName();
-                var ip = Dns.GetHostEntry(host).AddressList[1];
-                IPAddr = ip;
+                var ip = Dns.GetHostEntry(host).AddressList[2];
+                IPAddr = Convert.ToString(ip);
                 port = 8888;
-                fServerSettings.Settings settings = new fServerSettings.Settings(IPAddr,port);
-                bf.Serialize(fs, settings);
+                FServerSettings.Settings settings = new FServerSettings.Settings(IPAddr,port);
+                xmlSerializer.Serialize(fs, settings);
                 MessageBox.Show("Cannot load settings, default was set");
             }
             finally
