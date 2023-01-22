@@ -25,19 +25,21 @@ namespace WFChatServer
                     request = "SELECT COUNT(Username) FROM Users WHERE Username = '" + username + "' AND Password  =  '" + password + "'";
                     sqlCommand = new SqlCommand(request, connection);
                     number = (Int32)sqlCommand.ExecuteScalar();
-                    connection.Close();
                     if (number > 0)
                     {
+                        connection.Close();
                         return "OK";
                         
                     }
                     else
                     {
+                        connection.Close();
                         return "Incorrect password"; 
                     }
                 }
                 else
                 {
+                    connection.Close();
                     return "User is not found";
                 }
             }
