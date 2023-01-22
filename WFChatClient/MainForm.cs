@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Xml.Serialization;
 using WinFormClient.Properties;
+using System.Diagnostics;
 
 namespace WinFormClient
 {
@@ -20,8 +21,6 @@ namespace WinFormClient
         NetworkStream stream { get; set; }
         IPAddress ipAddr { get; set; }
         int port { get; set; }
-        XmlSerializer xmlSerializer { get; set; }
-        FileStream fs { get; set; }
         string Username { get; set; }
         string Password { get; set; }
         Thread recieveThread { get; set; }
@@ -29,6 +28,8 @@ namespace WinFormClient
         {
             InitializeComponent();
         }
+        public XmlSerializer xmlSerializer { get; set; }
+        public FileStream fs { get; set; }
         //TODO space can movecoret ~
         private void bSend_Click(object sender, EventArgs e)
         {
@@ -116,8 +117,8 @@ namespace WinFormClient
                 #region desirializeSettings
                 try
                 {
-                    xmlSerializer = new XmlSerializer(typeof(Settings));
-                    fs = new FileStream("settings.dat", FileMode.OpenOrCreate);
+                    xmlSerializer = new XmlSerializer(typeof(FClientSettings.Settings));
+                    fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
                     FClientSettings.Settings desSettings = (FClientSettings.Settings)xmlSerializer.Deserialize(fs);
 
 
@@ -172,12 +173,13 @@ namespace WinFormClient
 
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 tbSend.Enabled = false;
                 bSend.Enabled = false;
 
                 Disconnect();
+                Debug.WriteLine(ex.Message);
                 MessageBox.Show("Cannot communicate with server, try again later please");
                 Environment.Exit(0);
             }
