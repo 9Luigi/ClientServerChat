@@ -109,33 +109,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientObject.cs" />
-    <Compile Include="ControllerObject.cs" />
-    <Compile Include="DBHandler.cs" />
+    <Compile Include="Classes\ClientObject.cs" />
+    <Compile Include="Classes\ControllerObject.cs" />
+    <Compile Include="Classes\DBHandler.cs" />
     <Compile Include="DBRegisteredUsersDataSet1.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DBRegisteredUsersDataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="FMain.cs">
+    <Compile Include="Forms\FMain.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FMain.Designer.cs">
+    <Compile Include="Forms\FMain.Designer.cs">
       <DependentUpon>FMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="FServerSettings.cs">
+    <Compile Include="Forms\FServerSettings.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FServerSettings.Designer.cs">
+    <Compile Include="Forms\FServerSettings.Designer.cs">
       <DependentUpon>FServerSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerObject.cs" />
-    <EmbeddedResource Include="FMain.resx">
+    <Compile Include="Classes\ServerObject.cs" />
+    <EmbeddedResource Include="Forms\FMain.resx">
       <DependentUpon>FMain.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FServerSettings.resx">
+    <EmbeddedResource Include="Forms\FServerSettings.resx">
       <DependentUpon>FServerSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

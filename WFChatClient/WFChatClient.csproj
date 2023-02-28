@@ -109,24 +109,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FClientSettings.cs">
+    <Compile Include="Forms\FClientSettings.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FClientSettings.Designer.cs">
+    <Compile Include="Forms\FClientSettings.Designer.cs">
       <DependentUpon>FClientSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainForm.cs">
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FClientSettings.resx">
+    <EmbeddedResource Include="Forms\FClientSettings.resx">
       <DependentUpon>FClientSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
