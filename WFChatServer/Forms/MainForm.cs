@@ -9,37 +9,37 @@ using Microsoft.Win32;
 
 namespace WFChatServer
 {
-    public partial class FMain : Form
+    public partial class MainForm : Form
     {
-        public FMain()
+        public MainForm()
         {
             InitializeComponent();
         }
-        internal static ServerObject server;
-        static ControllerObject controller;
-        static Thread listenThread;
-        StreamWriter logWriter;//Log file
-        private void fMain_Load(object sender, EventArgs e)
+        internal static ServerObject Server;
+        static ControllerObject _controller;
+        static Thread _listenThread;
+        StreamWriter _logWriter;//Log file
+        private void MainForm_Load(object sender, EventArgs e)
         {
 
             try
             {
-                controller = new ControllerObject();
-                server = new ServerObject();
-                server.dataBaseHandler.errorEvent += showEventMessage;
-                server.serverObjectToFMainFormEvent += notifyFromClientToMainForm;
-                server.transferEvent += notifyFromClientToMainForm;
-                controller.returnCommandEvent += ControllerFunction;
+                _controller = new ControllerObject();
+                Server = new ServerObject();
+                Server.DataBaseHandler.ErrorEvent += ShowEventMessage;
+                Server.ServerObjectToMainFormEvent += NotifyFromClientToMainForm;
+                Server.TransferEvent += NotifyFromClientToMainForm;
+                _controller.ReturnCommandEvent += ControllerFunction;
 
-                listenThread = new Thread(new ThreadStart(server.Listen)); //thread for listen
-                listenThread.IsBackground = true; //thread will close after close main(entry point?) thread
+                _listenThread = new Thread(new ThreadStart(Server.Listen)); //thread for listen
+                _listenThread.IsBackground = true; //thread will close after close main(entry point?) thread
 
-                listenThread.Start();
+                _listenThread.Start();
             }
             catch (Exception ex)
             {
                 tbController.Text = ex.Message + ", click any button to continue" + Environment.NewLine;
-                server.Disconnect();
+                Server.Disconnect();
             }
             string path = Environment.CurrentDirectory + "\\logs";
             if (Directory.Exists(path) == false)
@@ -50,7 +50,7 @@ namespace WFChatServer
 
         private void bSend_Click(object sender, EventArgs e)
         {
-            controller.Controller(tbSendCommand.Text);
+            _controller.Controller(tbSendCommand.Text);
             tbSendCommand.Text = "";
         }
 
@@ -71,11 +71,11 @@ namespace WFChatServer
         private void tbChatObs_TextChanged(object sender, EventArgs e)
         {
             string logFilePath = Environment.CurrentDirectory + "\\logs\\log-" + DateTime.Now.ToString("yy-MM-dd") + ".txt";
-            logWriter = new StreamWriter(logFilePath, true, Encoding.Unicode);
+            _logWriter = new StreamWriter(logFilePath, true, Encoding.Unicode);
             tbChatObs.SelectionStart = tbChatObs.Text.Length;
             tbChatObs.ScrollToCaret();
-            logWriter.WriteLine(tbChatObs.Lines[tbChatObs.Lines.Length - 2]);//-2 cause of NewLine
-            logWriter.Close();
+            _logWriter.WriteLine(tbChatObs.Lines[tbChatObs.Lines.Length - 2]);//-2 cause of NewLine
+            _logWriter.Close();
         }
 
         private void tbController_TextChanged(object sender, EventArgs e) //scroll to the end of the tbController
@@ -113,41 +113,41 @@ namespace WFChatServer
 
         private void bSettings_Click(object sender, EventArgs e)
         {
-            FServerSettings fsettings = new FServerSettings();
+            SettingsForm fsettings = new SettingsForm();
             fsettings.Show();
         }
         #region EventFunctions
-        private void showEventMessage(string message)
+        private void ShowEventMessage(string message)
         {
             this.Invoke(new Action(() => MessageBox.Show(message)));
         }
-    
 
-       
+
+
         //TODO bring the top functions (events) in line with notifySenderToMainForm(wich is below)
-        void notifyFromClientToMainForm(ClientObject sender, ClientObjectEventArgs e)
+        void NotifyFromClientToMainForm(ClientObject sender, ClientObjectEventArgs e)
         {
-            switch (e.target)
+            switch (e.Target)
             {
                 case "tbChatObs":
-                    this.Invoke(new Action(() => tbChatObs.Text += e.message + Environment.NewLine));
+                    this.Invoke(new Action(() => tbChatObs.Text += e.Message + Environment.NewLine));
                     break;
                 case "tbController":
-                    this.Invoke(new Action(() => tbController.Text += e.message + Environment.NewLine));
+                    this.Invoke(new Action(() => tbController.Text += e.Message + Environment.NewLine));
                     break;
                 default:
                     break;
             }
         }
-        void notifyFromClientToMainForm(serverObjectToFMainEventArgs e)
+        void NotifyFromClientToMainForm(ServerObjectToMainFormEventArgs e)
         {
-            switch (e.context)
+            switch (e.Context)
             {
                 case "tbChatObs":
-                    this.Invoke(new Action(() => tbChatObs.Text += e.message + Environment.NewLine));
+                    this.Invoke(new Action(() => tbChatObs.Text += e.Message + Environment.NewLine));
                     break;
                 case "tbController":
-                    this.Invoke(new Action(() => tbController.Text += e.message + Environment.NewLine));
+                    this.Invoke(new Action(() => tbController.Text += e.Message + Environment.NewLine));
                     break;
                 default:
                     break;
@@ -155,15 +155,15 @@ namespace WFChatServer
         }
         #endregion
         #region ChatController
-        void ControllerFunction(commandEventArgs e)
+        void ControllerFunction(CommandEventArgs e)
         {
-            switch (e.message)
+            switch (e.Message)
             {
                 case "help":
-                    help();
+                    Help();
                     break;
                 case "users":
-                    clientUserNamesPrint();
+                    ClientUserNamesPrint();
                     break;
                 case "test":
                     MessageBox.Show("test");
@@ -176,22 +176,22 @@ namespace WFChatServer
                     break;
             }
         }
-        internal void help()
+        internal void Help()
         {
             this.Invoke(new Action(() => tbController.Text += String.Format("{0}: {1}", "Exit: ", "Close the application") + Environment.NewLine));
             this.Invoke(new Action(() => tbController.Text += String.Format("{0}: {1}", "Users: ", "Print users list") + Environment.NewLine));
         }
-        internal void clientUserNamesPrint()
+        internal void ClientUserNamesPrint()
         {
             try
             {
 
-                if (server.clients.Count > 0)
+                if (Server.Clients.Count > 0)
                 {
-                    for (int i = 0; i < server.clients.Count; i++)
+                    for (int i = 0; i < Server.Clients.Count; i++)
                     {
                         /* Program.fMainReferense.tbController.Text = fMain.server.clients[i].userName + Environment.NewLine;*/
-                        this.Invoke(new Action(() => tbController.Text += server.clients[i].userName + Environment.NewLine));
+                        this.Invoke(new Action(() => tbController.Text += Server.Clients[i].UserName + Environment.NewLine));
                     }
                 }
                 else

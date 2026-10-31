@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace WinFormClient
+namespace WFChatClient
 {
     static class Program
     {
@@ -16,8 +16,8 @@ namespace WinFormClient
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new mainForm());            
+            Application.Run(new MainForm());
         }
-        
+
     }
 }

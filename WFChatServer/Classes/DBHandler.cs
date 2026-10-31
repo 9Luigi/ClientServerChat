@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace WFChatServer
 {
     class DBHandler
     {
-        internal delegate void errorDelegate(string message);
-        internal event errorDelegate errorEvent;
+        internal delegate void ErrorDelegate(string message);
+        internal event ErrorDelegate ErrorEvent;
         internal string AuthorizeDB(string username, string password)
         {
             try
@@ -19,7 +19,7 @@ namespace WFChatServer
                 string request = "SELECT COUNT(Username) FROM Users WHERE Username = '"+ username + "'";
                 SqlCommand sqlCommand = new SqlCommand(request,connection);
                 int number = (Int32)sqlCommand.ExecuteScalar();
-                
+
                 if (number>0)
                 {
                     request = "SELECT COUNT(Username) FROM Users WHERE Username = '" + username + "' AND Password  =  '" + password + "'";
@@ -29,12 +29,12 @@ namespace WFChatServer
                     {
                         connection.Close();
                         return "OK";
-                        
+
                     }
                     else
                     {
                         connection.Close();
-                        return "Incorrect password"; 
+                        return "Incorrect password";
                     }
                 }
                 else
@@ -45,8 +45,8 @@ namespace WFChatServer
             }
             catch(Exception ex)
             {
-                errorEvent.Invoke(ex.Message);
-                return "Error"; 
+                ErrorEvent.Invoke(ex.Message);
+                return "Error";
             }
         }
     }

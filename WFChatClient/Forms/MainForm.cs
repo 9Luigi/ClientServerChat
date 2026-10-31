@@ -10,26 +10,26 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Xml.Serialization;
-using WinFormClient.Properties;
+using WFChatClient.Properties;
 using System.Diagnostics;
 
-namespace WinFormClient
+namespace WFChatClient
 {
-    public partial class mainForm : Form
+    public partial class MainForm : Form
     {
-        TcpClient client { get; set; }
-        NetworkStream stream { get; set; }
-        IPAddress ipAddr { get; set; }
-        int port { get; set; }
-        string Username { get; set; }
+        TcpClient Client { get; set; }
+        NetworkStream Stream { get; set; }
+        IPAddress IpAddress { get; set; }
+        int Port { get; set; }
+        string UserName { get; set; }
         string Password { get; set; }
-        Thread recieveThread { get; set; }
-        public mainForm()
+        Thread ReceiveThread { get; set; }
+        public MainForm()
         {
             InitializeComponent();
         }
-        public XmlSerializer xmlSerializer { get; set; }
-        public FileStream fs { get; set; }
+        XmlSerializer XmlSerializer { get; set; }
+        FileStream FileStream { get; set; }
         //TODO space can movecoret ~
         private void bSend_Click(object sender, EventArgs e)
         {
@@ -38,21 +38,21 @@ namespace WinFormClient
                 string message = tbSend.Text;
                 tbSend.Text = "";
                 byte[] bytes = Encoding.Unicode.GetBytes(message);
-                stream.Write(bytes, 0, bytes.Length);
-                tbRecieve.Text += Environment.NewLine + message;
+                Stream.Write(bytes, 0, bytes.Length);
+                tbReceive.Text += Environment.NewLine + message;
             }
             catch (Exception ex)
             {
-                tbRecieve.Text += ex.Message;
+                tbReceive.Text += ex.Message;
                 Disconnect();
                 MessageBox.Show("Cannot communicate with server, try again later please");
                 Environment.Exit(0);
             }
         }
-        private void recieveMessage()
+        private void ReceiveMessage()
         {
             StringBuilder builder;
-            int lenght;
+            int length;
             try
             {
                 while (true)
@@ -62,12 +62,12 @@ namespace WinFormClient
                         do
                         {
                             byte[] bytes = new byte[256];
-                            builder = new StringBuilder(); //buidler appends buffer bytes from stream until data available in stream 
-                            lenght = stream.Read(bytes, 0, bytes.Length);
-                            builder.Append(Encoding.Unicode.GetString(bytes, 0, lenght));
+                            builder = new StringBuilder(); //buidler appends buffer bytes from stream until data available in stream
+                            length = Stream.Read(bytes, 0, bytes.Length);
+                            builder.Append(Encoding.Unicode.GetString(bytes, 0, length));
                         }
-                        while (stream.DataAvailable);
-                        tbRecieve.Text += Environment.NewLine + builder.ToString();
+                        while (Stream.DataAvailable);
+                        tbReceive.Text += Environment.NewLine + builder.ToString();
                     }
                     catch
                     {
@@ -90,66 +90,66 @@ namespace WinFormClient
         }
         private void Disconnect()
         {
-            if (stream != null)
+            if (Stream != null)
             {
-                stream.Close();
+                Stream.Close();
             }
-            if (client != null)
+            if (Client != null)
             {
-                client.Close();
+                Client.Close();
             }
         }
 
-        private void tbRecieve_TextChanged(object sender, EventArgs e)
+        private void tbReceive_TextChanged(object sender, EventArgs e)
         {
-            tbRecieve.SelectionStart = tbRecieve.Text.Length;
-            tbRecieve.ScrollToCaret();
+            tbReceive.SelectionStart = tbReceive.Text.Length;
+            tbReceive.ScrollToCaret();
         }
 
         internal void bLogin_Click(object sender, EventArgs e)
         {
-            Username = tbUsername.Text;
+            UserName = tbUsername.Text;
             Password = tbPassword.Text;
             StringBuilder builder;
-            int lenght;
+            int length;
             try
             {
                 #region desirializeSettings
                 try
                 {
-                    xmlSerializer = new XmlSerializer(typeof(FClientSettings.Settings));
-                    fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
-                    FClientSettings.Settings desSettings = (FClientSettings.Settings)xmlSerializer.Deserialize(fs);
+                    XmlSerializer = new XmlSerializer(typeof(SettingsForm.Settings));
+                    FileStream = new FileStream("settings.xml", FileMode.OpenOrCreate);
+                    SettingsForm.Settings desSettings = (SettingsForm.Settings)XmlSerializer.Deserialize(FileStream);
 
 
-                    ipAddr = IPAddress.Parse(desSettings.ipAdd);
-                    port = desSettings.port;
+                    IpAddress = IPAddress.Parse(desSettings.IpAddress);
+                    Port = desSettings.Port;
                 }
                 catch
                 {
-                    ipAddr = IPAddress.Parse("192.168.0.5");
-                    port = 8888;
+                    IpAddress = IPAddress.Parse("192.168.0.5");
+                    Port = 8888;
                 }
                 finally
                 {
-                    fs.Close();
+                    FileStream.Close();
                 }
                 #endregion
-                client = new TcpClient();
+                Client = new TcpClient();
 
-                client.Connect(ipAddr, port);
-                stream = client.GetStream();
-                string message = Username + " " + Password;
+                Client.Connect(IpAddress, Port);
+                Stream = Client.GetStream();
+                string message = UserName + " " + Password;
                 byte[] bytes = Encoding.Unicode.GetBytes(message);
-                stream.Write(bytes, 0, bytes.Length);
+                Stream.Write(bytes, 0, bytes.Length);
                 do
                 {
-                    byte[] recieveBytes = new byte[256];
-                    builder = new StringBuilder(); //builder appends buffer bytes from stream until data available in stream 
-                    lenght = stream.Read(recieveBytes, 0, recieveBytes.Length);
-                    builder.Append(Encoding.Unicode.GetString(recieveBytes, 0, lenght));
+                    byte[] receiveBytes = new byte[256];
+                    builder = new StringBuilder(); //builder appends buffer bytes from stream until data available in stream
+                    length = Stream.Read(receiveBytes, 0, receiveBytes.Length);
+                    builder.Append(Encoding.Unicode.GetString(receiveBytes, 0, length));
                 }
-                while (stream.DataAvailable);
+                while (Stream.DataAvailable);
                 if (builder.ToString() == "User is not found")
                 {
                     Disconnect();
@@ -163,13 +163,13 @@ namespace WinFormClient
                 }
                 else if(builder.ToString() == "OK")
                 {
-                    
-                    closeLoginAndOpenChat();
-                    tbRecieve.Text = String.Format("Welcome {0}!", tbUsername.Text);
 
-                    recieveThread = new Thread(new ThreadStart(recieveMessage));
-                    recieveThread.IsBackground = true;
-                    recieveThread.Start();
+                    CloseLoginAndOpenChat();
+                    tbReceive.Text = String.Format("Welcome {0}!", tbUsername.Text);
+
+                    ReceiveThread = new Thread(new ThreadStart(ReceiveMessage));
+                    ReceiveThread.IsBackground = true;
+                    ReceiveThread.Start();
 
                 }
             }
@@ -203,7 +203,7 @@ namespace WinFormClient
             }
         }
 
-        private void tbRecieve_Enter(object sender, EventArgs e)
+        private void tbReceive_Enter(object sender, EventArgs e)
         {
             this.ActiveControl = tbSend;
         }
@@ -215,15 +215,15 @@ namespace WinFormClient
 
         private void bChangeServer_Click(object sender, EventArgs e)
         {
-            FClientSettings fsettings = new FClientSettings();
+            SettingsForm fsettings = new SettingsForm();
             fsettings.ShowDialog();
         }
-        internal void closeLoginAndOpenChat()
+        internal void CloseLoginAndOpenChat()
         {
             bLogin.Visible = false;
             tbPassword.Visible = false;
             tbUsername.Visible = false;
-            tbRecieve.Visible = true;
+            tbReceive.Visible = true;
             tbSend.Visible = true;
             bSend.Visible = true;
             label1.Visible = false;

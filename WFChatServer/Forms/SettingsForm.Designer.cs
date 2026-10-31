@@ -1,7 +1,7 @@
 ﻿
 namespace WFChatServer
 {
-    partial class FServerSettings
+    partial class SettingsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -78,7 +78,7 @@ namespace WFChatServer
             this.bSaveSettings.UseVisualStyleBackColor = true;
             this.bSaveSettings.Click += new System.EventHandler(this.bSaveSettings_Click);
             // 
-            // fSettings
+            // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -89,10 +89,10 @@ namespace WFChatServer
             this.Controls.Add(this.label1);
             this.Controls.Add(this.bSaveSettings);
             this.MaximizeBox = false;
-            this.Name = "fSettings";
+            this.Name = "SettingsForm";
             this.ShowIcon = false;
             this.Text = "Settings";
-            this.Load += new System.EventHandler(this.fSettings_Load);
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

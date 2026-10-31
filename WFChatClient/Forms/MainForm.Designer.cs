@@ -1,7 +1,7 @@
 ﻿
-namespace WinFormClient
+namespace WFChatClient
 {
-    partial class mainForm
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@ namespace WinFormClient
         /// </summary>
         private void InitializeComponent()
         {
-            this.tbRecieve = new System.Windows.Forms.TextBox();
+            this.tbReceive = new System.Windows.Forms.TextBox();
             this.bSend = new System.Windows.Forms.Button();
             this.tbSend = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -48,21 +48,21 @@ namespace WinFormClient
             this.bChangeServer = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // tbRecieve
+            // tbReceive
             // 
-            this.tbRecieve.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.tbReceive.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbRecieve.Cursor = System.Windows.Forms.Cursors.No;
-            this.tbRecieve.Location = new System.Drawing.Point(0, 0);
-            this.tbRecieve.Multiline = true;
-            this.tbRecieve.Name = "tbRecieve";
-            this.tbRecieve.ReadOnly = true;
-            this.tbRecieve.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbRecieve.Size = new System.Drawing.Size(252, 227);
-            this.tbRecieve.TabIndex = 0;
-            this.tbRecieve.Visible = false;
-            this.tbRecieve.TextChanged += new System.EventHandler(this.tbRecieve_TextChanged);
-            this.tbRecieve.Enter += new System.EventHandler(this.tbRecieve_Enter);
+            this.tbReceive.Cursor = System.Windows.Forms.Cursors.No;
+            this.tbReceive.Location = new System.Drawing.Point(0, 0);
+            this.tbReceive.Multiline = true;
+            this.tbReceive.Name = "tbReceive";
+            this.tbReceive.ReadOnly = true;
+            this.tbReceive.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbReceive.Size = new System.Drawing.Size(252, 227);
+            this.tbReceive.TabIndex = 0;
+            this.tbReceive.Visible = false;
+            this.tbReceive.TextChanged += new System.EventHandler(this.tbReceive_TextChanged);
+            this.tbReceive.Enter += new System.EventHandler(this.tbReceive_Enter);
             // 
             // bSend
             // 
@@ -202,7 +202,7 @@ namespace WinFormClient
             this.bChangeServer.UseVisualStyleBackColor = true;
             this.bChangeServer.Click += new System.EventHandler(this.bChangeServer_Click);
             // 
-            // mainForm
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -216,10 +216,10 @@ namespace WinFormClient
             this.Controls.Add(this.bLogin);
             this.Controls.Add(this.bSend);
             this.Controls.Add(this.tbSend);
-            this.Controls.Add(this.tbRecieve);
+            this.Controls.Add(this.tbReceive);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.Name = "mainForm";
+            this.Name = "MainForm";
             this.Text = "Chat";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -228,7 +228,7 @@ namespace WinFormClient
 
         #endregion
         private System.Windows.Forms.Button bSend;
-        public System.Windows.Forms.TextBox tbRecieve;
+        public System.Windows.Forms.TextBox tbReceive;
         public System.Windows.Forms.TextBox tbSend;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;

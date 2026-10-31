@@ -18,6 +18,7 @@ using System.Runtime.InteropServices;
 // to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("9613c11c-5ae1-403f-9221-4db65dc8a49e")]

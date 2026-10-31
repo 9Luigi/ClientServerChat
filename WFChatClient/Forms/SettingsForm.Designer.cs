@@ -1,7 +1,7 @@
 ﻿
-namespace WinFormClient
+namespace WFChatClient
 {
-    partial class FClientSettings
+    partial class SettingsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -78,7 +78,7 @@ namespace WinFormClient
             this.mtbPort.Size = new System.Drawing.Size(100, 20);
             this.mtbPort.TabIndex = 6;
             // 
-            // fSettings
+            // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -89,9 +89,9 @@ namespace WinFormClient
             this.Controls.Add(this.label1);
             this.Controls.Add(this.bSaveSettings);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Name = "fSettings";
+            this.Name = "SettingsForm";
             this.Text = "Settings";
-            this.Load += new System.EventHandler(this.fSettings_Load);
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

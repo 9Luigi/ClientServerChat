@@ -7,26 +7,28 @@ using System.Xml.Serialization;
 
 namespace WFChatServer
 {
-    public partial class FServerSettings : Form
+    public partial class SettingsForm : Form
     {
-        public FServerSettings()
+        public SettingsForm()
         {
             InitializeComponent();
         }
         [Serializable]
         public class Settings
         {
-            public string ipaddr { get; set; }
-            public int port { get; set; }
-            public Settings(string ipaddr, int port)
+            [XmlElement("ipaddr")] //keeps the element names of existing settings.xml files
+            public string IpAddress { get; set; }
+            [XmlElement("port")]
+            public int Port { get; set; }
+            public Settings(string ipAddress, int port)
             {
-                this.ipaddr = ipaddr;
-                this.port = port;
+                this.IpAddress = ipAddress;
+                this.Port = port;
             }
             public Settings() { }
         }
-        XmlSerializer xmlSerializer;
-        FileStream fs;
+        XmlSerializer _xmlSerializer;
+        FileStream _fs;
         private void bSaveSettings_Click(object sender, EventArgs e)
         {
             if (mtbIPAddress.Text != "" && mtbPort.Text != "")
@@ -36,13 +38,13 @@ namespace WFChatServer
                     Settings settings = new Settings(mtbIPAddress.Text, Convert.ToInt32(mtbPort.Text));
                     try
                     {
-                        xmlSerializer = new XmlSerializer(typeof(FServerSettings.Settings) );
-                        fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
-                        xmlSerializer.Serialize(fs, settings);
-                        fs.Close();
-                        
+                        _xmlSerializer = new XmlSerializer(typeof(SettingsForm.Settings) );
+                        _fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+                        _xmlSerializer.Serialize(_fs, settings);
+                        _fs.Close();
+
                         MessageBox.Show("Succesful, reload the application for the changes to take effect");
-                        FServerSettings.ActiveForm.Close();
+                        SettingsForm.ActiveForm.Close();
                     }
                     catch(Exception ex)
                     {
@@ -60,17 +62,17 @@ namespace WFChatServer
                 MessageBox.Show("Fill in all the fields");
             }
         }
-    private void fSettings_Load(object sender, EventArgs e)
+    private void SettingsForm_Load(object sender, EventArgs e)
         {
-            xmlSerializer = new XmlSerializer(typeof(FServerSettings.Settings) );
-            fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+            _xmlSerializer = new XmlSerializer(typeof(SettingsForm.Settings) );
+            _fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
             try
             {
-                Settings desSettings = (Settings)xmlSerializer.Deserialize(fs);
+                Settings desSettings = (Settings)_xmlSerializer.Deserialize(_fs);
 
-                
-                mtbIPAddress.Text = desSettings.ipaddr.ToString();
-                mtbPort.Text = desSettings.port.ToString();
+
+                mtbIPAddress.Text = desSettings.IpAddress.ToString();
+                mtbPort.Text = desSettings.Port.ToString();
             }
             catch(Exception ex)
             {
@@ -78,7 +80,7 @@ namespace WFChatServer
             }
             finally
             {
-                fs.Close();
+                _fs.Close();
             }
         }
     }

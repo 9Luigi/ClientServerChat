@@ -1,7 +1,7 @@
 ﻿
 namespace WFChatServer
 {
-    partial class FMain
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -119,7 +119,7 @@ namespace WFChatServer
             this.tbSendCommand.TabIndex = 3;
             this.tbSendCommand.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbSendCommand_KeyDown);
             // 
-            // fMain
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -131,9 +131,9 @@ namespace WFChatServer
             this.Controls.Add(this.tbChatObs);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.Name = "fMain";
+            this.Name = "MainForm";
             this.Text = "Server";
-            this.Load += new System.EventHandler(this.fMain_Load);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.pButtons.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

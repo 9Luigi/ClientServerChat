@@ -6,28 +6,30 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Serialization;
 using System.Xml;
 
-namespace WinFormClient
+namespace WFChatClient
 {
-    public partial class FClientSettings : Form
+    public partial class SettingsForm : Form
     {
         [Serializable]
         public class Settings
         {
-            public int port {  get;  set; }
-            public string ipAdd { get;  set; }
-            public Settings(int port, string ipAdd)
+            [XmlElement("port")] //keeps the element names of existing settings.xml files
+            public int Port {  get;  set; }
+            [XmlElement("ipAdd")]
+            public string IpAddress { get;  set; }
+            public Settings(int port, string ipAddress)
             {
-                this.port = port;
-                this.ipAdd = ipAdd;
+                this.Port = port;
+                this.IpAddress = ipAddress;
             }
             public Settings() { }
         }
-        public FClientSettings()
+        public SettingsForm()
         {
             InitializeComponent();
         }
-        XmlSerializer xmlSerializer;
-        FileStream fs;
+        XmlSerializer _xmlSerializer;
+        FileStream _fs;
         private void bSaveSettings_Click(object sender, EventArgs e)
         {
             if (mtbIPAddress.Text!=null && mtbPort.Text!= null)
@@ -37,13 +39,13 @@ namespace WinFormClient
                     Settings settings = new Settings(Convert.ToInt32(mtbPort.Text), mtbIPAddress.Text);
                     try
                     {
-                        xmlSerializer = new XmlSerializer(typeof(Settings));
-                        fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
-                        xmlSerializer.Serialize(fs, settings);
+                        _xmlSerializer = new XmlSerializer(typeof(Settings));
+                        _fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+                        _xmlSerializer.Serialize(_fs, settings);
 
-                        fs.Close();
+                        _fs.Close();
                         MessageBox.Show("Succesful");
-                        FClientSettings.ActiveForm.Close();
+                        SettingsForm.ActiveForm.Close();
                     }
                     catch
                     {
@@ -54,7 +56,7 @@ namespace WinFormClient
                 {
                     MessageBox.Show("Incorrect port or ip address");
                 }
-                
+
             }
             else
             {
@@ -62,16 +64,16 @@ namespace WinFormClient
             }
         }
 
-        private void fSettings_Load(object sender, EventArgs e)
+        private void SettingsForm_Load(object sender, EventArgs e)
         {
-            xmlSerializer = new XmlSerializer(typeof(Settings));
-            fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
+            _xmlSerializer = new XmlSerializer(typeof(Settings));
+            _fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
             try
             {
-                Settings desSettings = (Settings)xmlSerializer.Deserialize(fs);
+                Settings desSettings = (Settings)_xmlSerializer.Deserialize(_fs);
 
-                mtbIPAddress.Text = desSettings.ipAdd.ToString();
-                mtbPort.Text = desSettings.port.ToString();
+                mtbIPAddress.Text = desSettings.IpAddress.ToString();
+                mtbPort.Text = desSettings.Port.ToString();
             }
             catch
             {
@@ -81,7 +83,7 @@ namespace WinFormClient
             }
             finally
             {
-                fs.Close();
+                _fs.Close();
             }
         }
     }
