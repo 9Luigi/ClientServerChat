@@ -77,7 +77,7 @@ namespace WFChatServer
                 while (true)
                 {
                     TcpClient client = Listener.AcceptTcpClient(); //new tcpClient for each client
-                    ClientObject clientObj = new ClientObject(client, this);//is added connected client to collection
+                    ClientObject clientObj = new ClientObject(client, this);//added to the collection only after authorization, see Process
                     clientObj.NotificationEvent += TransferDataFromClientObjectToMainForm;
                     Thread clientThread = new Thread(new ThreadStart(clientObj.Process)); //transfer data beetwen server and each client
                     clientThread.IsBackground = true;

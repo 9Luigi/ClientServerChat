@@ -32,7 +32,6 @@ namespace WFChatServer
             ID = Guid.NewGuid().ToString(); //set uniq ID property for each clientOBJ
             this.Client = client;
             this.Server = server;
-            server.AddConnection(this); //is adding cliebtOBJ to collection
         }
         internal void Process()
         {
@@ -47,10 +46,11 @@ namespace WFChatServer
                 string authorizeResult = Server.DataBaseHandler.AuthorizeDB(UserName, Password);
                 if (authorizeResult == "OK")
                 {
+                    Server.SendMessage(authorizeResult, this); //before AddConnection so the "OK" reply can't be mixed with a broadcast
+                    Server.AddConnection(this); //only authorized clients receive chat messages
                     message = messageSendTime + UserName + " entered the chat";
                     Server.BroadcastMessage(message, this.ID);
                     NotificationEvent.Invoke(this, new ClientObjectEventArgs(message, "tbChatObs"));
-                    Server.SendMessage(authorizeResult, this);
                     while (true)
                     {
                         messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
@@ -73,7 +73,6 @@ namespace WFChatServer
                 else
                 {
                     Server.SendMessage(authorizeResult, this);
-                    Server.RemoveConnection(this.ID);
                     Close();
                 }
 
