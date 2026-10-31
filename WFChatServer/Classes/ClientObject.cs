@@ -44,12 +44,13 @@ namespace WFChatServer
                 UserNameAndPassword = message.Split(' ');
                 UserName = UserNameAndPassword[0];
                 Password = UserNameAndPassword[1];
-                if (Server.DataBaseHandler.AuthorizeDB(UserName, Password) == "OK")
+                string authorizeResult = Server.DataBaseHandler.AuthorizeDB(UserName, Password);
+                if (authorizeResult == "OK")
                 {
                     message = messageSendTime + UserName + " entered the chat";
                     Server.BroadcastMessage(message, this.ID);
                     NotificationEvent.Invoke(this, new ClientObjectEventArgs(message, "tbChatObs"));
-                    Server.SendMessage(Server.DataBaseHandler.AuthorizeDB(UserName, Password), this);
+                    Server.SendMessage(authorizeResult, this);
                     while (true)
                     {
                         messageSendTime = DateTime.Now.ToString("hh:mm:ss ");
@@ -71,7 +72,7 @@ namespace WFChatServer
                 }
                 else
                 {
-                    Server.SendMessage(Server.DataBaseHandler.AuthorizeDB(UserName, Password), this);
+                    Server.SendMessage(authorizeResult, this);
                     Server.RemoveConnection(this.ID);
                     Close();
                 }

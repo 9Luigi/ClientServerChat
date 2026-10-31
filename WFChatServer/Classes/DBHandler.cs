@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Windows.Forms;
 
@@ -13,34 +14,34 @@ namespace WFChatServer
             try
             {
                 string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\dbRegisteredUsers.mdf;Integrated Security=True;Pooling=True";
-                SqlConnection connection = new SqlConnection(connectionString);
-                connection.Open();
-
-                string request = "SELECT COUNT(Username) FROM Users WHERE Username = '"+ username + "'";
-                SqlCommand sqlCommand = new SqlCommand(request,connection);
-                int number = (Int32)sqlCommand.ExecuteScalar();
-
-                if (number>0)
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    request = "SELECT COUNT(Username) FROM Users WHERE Username = '" + username + "' AND Password  =  '" + password + "'";
-                    sqlCommand = new SqlCommand(request, connection);
-                    number = (Int32)sqlCommand.ExecuteScalar();
+                    connection.Open();
+
+                    //values are passed as parameters, never concatenated into the query text (SQL injection)
+                    SqlCommand sqlCommand = new SqlCommand("SELECT COUNT(Username) FROM Users WHERE Username = @username", connection);
+                    sqlCommand.Parameters.Add("@username", SqlDbType.NVarChar).Value = username;
+                    int number = (Int32)sqlCommand.ExecuteScalar();
+
                     if (number > 0)
                     {
-                        connection.Close();
-                        return "OK";
-
+                        sqlCommand = new SqlCommand("SELECT COUNT(Username) FROM Users WHERE Username = @username AND Password = @password", connection);
+                        sqlCommand.Parameters.Add("@username", SqlDbType.NVarChar).Value = username;
+                        sqlCommand.Parameters.Add("@password", SqlDbType.NVarChar).Value = password;
+                        number = (Int32)sqlCommand.ExecuteScalar();
+                        if (number > 0)
+                        {
+                            return "OK";
+                        }
+                        else
+                        {
+                            return "Incorrect password";
+                        }
                     }
                     else
                     {
-                        connection.Close();
-                        return "Incorrect password";
+                        return "User is not found";
                     }
-                }
-                else
-                {
-                    connection.Close();
-                    return "User is not found";
                 }
             }
             catch(Exception ex)
