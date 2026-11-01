@@ -23,7 +23,7 @@ namespace ChatShared
             }
         }
 
-        static string FormatTime(DateTimeOffset time)
+        public static string FormatTime(DateTimeOffset time)
         {
             return time.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture); //24-hour clock in the reader's time zone
         }

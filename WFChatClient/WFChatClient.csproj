@@ -58,6 +58,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChatShared\ChatShared.csproj" />
+    <ProjectReference Include="..\WFChat.UI\WFChat.UI.csproj" />
   </ItemGroup>
 
 </Project>

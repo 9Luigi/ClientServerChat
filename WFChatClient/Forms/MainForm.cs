@@ -5,20 +5,38 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
-using ChatShared;
 using ChatShared.Protocol;
+using WFChat.UI;
 
 namespace WFChatClient
 {
     public partial class MainForm : Form
     {
+        static readonly Size ChatSize = new Size(820, 560);
+
         ChatClient _chat; //null while the login screen is shown
+        string _userName;
         readonly Size _loginSize;
 
         public MainForm()
         {
             InitializeComponent();
-            _loginSize = this.Size;
+            ApplyTheme();
+            _loginSize = this.ClientSize;
+            ShowServerAddress();
+        }
+
+        void ApplyTheme()
+        {
+            Theme.Apply(this);
+            Theme.StyleHeader(pHeader, lTitle, lSubtitle);
+            Theme.StyleCard(pLoginCard);
+            Theme.StylePrimary(bLogin);
+            Theme.StylePrimary(bSend);
+            Theme.StyleMuted(lServer);
+            Theme.StyleMuted(lSymbolLeftCount);
+            Theme.StyleTextFrame(pReceiveFrame, rtbReceive);
+            rtbReceive.Font = Theme.ChatFont;
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -27,35 +45,49 @@ namespace WFChatClient
             base.OnFormClosed(e);
         }
 
+        static ClientSettings LoadSettings()
+        {
+            return ClientSettings.Load(ClientSettings.FileName) ?? ClientSettings.CreateDefault();
+        }
+
+        void ShowServerAddress()
+        {
+            ClientSettings settings = LoadSettings();
+            lServer.Text = $"Server: {settings.IpAddress}:{settings.Port}";
+        }
+
         internal async void bLogin_Click(object sender, EventArgs e)
         {
-            ClientSettings settings = ClientSettings.Load(ClientSettings.FileName) ?? ClientSettings.CreateDefault();
+            ClientSettings settings = LoadSettings();
             var chat = new ChatClient();
             chat.MessageReceived += Chat_MessageReceived;
             chat.Disconnected += Chat_Disconnected;
 
             bLogin.Enabled = false;
+            bLogin.Text = "Connecting...";
             try
             {
                 LoginResult result = await chat.ConnectAsync(IPAddress.Parse(settings.IpAddress), settings.Port, tbUsername.Text, tbPassword.Text);
                 if (!result.Success)
                 {
-                    MessageBox.Show(LoginErrorText(result.Error));
+                    MessageBox.Show(LoginErrorText(result.Error), "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
                 _chat = chat;
-                CloseLoginAndOpenChat();
-                tbReceive.Text = String.Format("Welcome {0}!", tbUsername.Text);
+                _userName = tbUsername.Text;
+                ShowChat(settings);
+                ChatView.AppendNotice(rtbReceive, $"Welcome {_userName}!");
                 chat.StartReceiving(); //after the chat view is ready, so no message lands on the login screen
             }
             catch (Exception ex) when (ex is SocketException || ex is IOException || ex is InvalidDataException || ex is OperationCanceledException)
             {
                 Debug.WriteLine(ex);
-                MessageBox.Show("Cannot communicate with server, try again later please");
+                MessageBox.Show("Cannot communicate with server, try again later please", "Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 bLogin.Enabled = true;
+                bLogin.Text = "Log in";
             }
         }
 
@@ -93,11 +125,7 @@ namespace WFChatClient
         #region Chat events (raised on thread-pool threads)
         void Chat_MessageReceived(ChatMessage message)
         {
-            string line = ChatMessageText.Format(message);
-            if (line != null)
-            {
-                RunOnUiThread(() => tbReceive.AppendText(Environment.NewLine + line));
-            }
+            RunOnUiThread(() => ChatView.AppendMessage(rtbReceive, message, _userName));
         }
 
         void Chat_Disconnected(Exception error)
@@ -110,7 +138,7 @@ namespace WFChatClient
             {
                 _chat = null;
                 ShowLogin();
-                MessageBox.Show("Connection to the server was lost");
+                MessageBox.Show("Connection to the server was lost", "Connection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             });
         }
 
@@ -131,74 +159,59 @@ namespace WFChatClient
         }
         #endregion
 
-        private void tbReceive_TextChanged(object sender, EventArgs e)
-        {
-            tbReceive.SelectionStart = tbReceive.Text.Length;
-            tbReceive.ScrollToCaret();
-        }
-
         private void tbSend_KeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode)
+            //Enter sends through AcceptButton (bSend) while the chat is shown
+            if (e.KeyCode == Keys.Back)
             {
-                case Keys.Enter:
-                    e.SuppressKeyPress = true; //avoid new line(key realese event(?))
-                    bSend_Click(sender, e);
-                    break;
-                case Keys.Back:
-                    e.SuppressKeyPress = true;
-                    if (tbSend.SelectionStart > 0)
-                    {
-                        SendKeys.Send("+{LEFT}{DEL}"); //delete a word with ctrl+backspace, don't undestand how yet
-                    }
-                    break;
+                e.SuppressKeyPress = true;
+                if (tbSend.SelectionStart > 0)
+                {
+                    SendKeys.Send("+{LEFT}{DEL}"); //delete a word with ctrl+backspace, don't undestand how yet
+                }
             }
         }
 
-        private void tbReceive_Enter(object sender, EventArgs e)
+        private void rtbReceive_Enter(object sender, EventArgs e)
         {
             this.ActiveControl = tbSend;
         }
 
         private void tbSend_TextChanged(object sender, EventArgs e)
         {
-            lSymbolLeftCount.Text = (tbSend.MaxLength - tbSend.TextLength).ToString() + " symbol left";
+            lSymbolLeftCount.Text = (tbSend.MaxLength - tbSend.TextLength).ToString() + " symbols left";
         }
 
         private void bChangeServer_Click(object sender, EventArgs e)
         {
-            SettingsForm fsettings = new SettingsForm();
-            fsettings.ShowDialog();
+            using (SettingsForm fsettings = new SettingsForm())
+            {
+                fsettings.ShowDialog(this);
+            }
+            ShowServerAddress();
         }
 
-        internal void CloseLoginAndOpenChat()
+        void ShowChat(ClientSettings settings)
         {
-            SetChatVisible(true);
-            this.Size = new Size(816, 489);
+            pLogin.Visible = false;
+            pChat.Visible = true;
+            lSubtitle.Text = $"{_userName}  ·  {settings.IpAddress}:{settings.Port}";
+            this.AcceptButton = bSend;
+            this.ClientSize = new Size(Math.Max(ClientSize.Width, ChatSize.Width), Math.Max(ClientSize.Height, ChatSize.Height));
             this.ActiveControl = tbSend;
         }
 
         void ShowLogin()
         {
-            SetChatVisible(false);
-            tbReceive.Clear();
+            pChat.Visible = false;
+            pLogin.Visible = true;
+            rtbReceive.Clear();
             tbSend.Clear();
-            this.Size = _loginSize;
+            lSubtitle.Text = "";
+            _userName = null;
+            this.AcceptButton = bLogin;
+            this.ClientSize = _loginSize;
             this.ActiveControl = tbUsername;
-        }
-
-        void SetChatVisible(bool chat)
-        {
-            bLogin.Visible = !chat;
-            tbPassword.Visible = !chat;
-            tbUsername.Visible = !chat;
-            label1.Visible = !chat;
-            label2.Visible = !chat;
-            bChangeServer.Visible = !chat;
-            tbReceive.Visible = chat;
-            tbSend.Visible = chat;
-            bSend.Visible = chat;
-            lSymbolLeftCount.Visible = chat;
         }
     }
 }

@@ -29,68 +29,88 @@ namespace WFChatClient
         /// </summary>
         private void InitializeComponent()
         {
-            this.bSaveSettings = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lIpAddress = new System.Windows.Forms.Label();
             this.mtbIPAddress = new System.Windows.Forms.MaskedTextBox();
+            this.lPort = new System.Windows.Forms.Label();
             this.mtbPort = new System.Windows.Forms.MaskedTextBox();
+            this.bCancel = new System.Windows.Forms.Button();
+            this.bSaveSettings = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // bSaveSettings
+            // lIpAddress
             // 
-            this.bSaveSettings.Location = new System.Drawing.Point(72, 64);
-            this.bSaveSettings.Name = "bSaveSettings";
-            this.bSaveSettings.Size = new System.Drawing.Size(100, 23);
-            this.bSaveSettings.TabIndex = 2;
-            this.bSaveSettings.Text = "Save settings";
-            this.bSaveSettings.UseVisualStyleBackColor = true;
-            this.bSaveSettings.Click += new System.EventHandler(this.bSaveSettings_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 15);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(57, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "IP-address";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 38);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(26, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Port";
+            this.lIpAddress.AutoSize = true;
+            this.lIpAddress.Location = new System.Drawing.Point(20, 20);
+            this.lIpAddress.Name = "lIpAddress";
+            this.lIpAddress.Size = new System.Drawing.Size(70, 17);
+            this.lIpAddress.TabIndex = 4;
+            this.lIpAddress.Text = "IP address";
             // 
             // mtbIPAddress
             // 
-            this.mtbIPAddress.Location = new System.Drawing.Point(72, 15);
+            this.mtbIPAddress.Location = new System.Drawing.Point(20, 42);
             this.mtbIPAddress.Name = "mtbIPAddress";
-            this.mtbIPAddress.Size = new System.Drawing.Size(100, 20);
-            this.mtbIPAddress.TabIndex = 5;
+            this.mtbIPAddress.Size = new System.Drawing.Size(280, 25);
+            this.mtbIPAddress.TabIndex = 0;
+            // 
+            // lPort
+            // 
+            this.lPort.AutoSize = true;
+            this.lPort.Location = new System.Drawing.Point(20, 80);
+            this.lPort.Name = "lPort";
+            this.lPort.Size = new System.Drawing.Size(32, 17);
+            this.lPort.TabIndex = 5;
+            this.lPort.Text = "Port";
             // 
             // mtbPort
             // 
-            this.mtbPort.Location = new System.Drawing.Point(72, 38);
+            this.mtbPort.Location = new System.Drawing.Point(20, 102);
             this.mtbPort.Name = "mtbPort";
-            this.mtbPort.Size = new System.Drawing.Size(100, 20);
-            this.mtbPort.TabIndex = 6;
+            this.mtbPort.Size = new System.Drawing.Size(280, 25);
+            this.mtbPort.TabIndex = 1;
+            // 
+            // bCancel
+            // 
+            this.bCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.bCancel.Location = new System.Drawing.Point(80, 148);
+            this.bCancel.Name = "bCancel";
+            this.bCancel.Size = new System.Drawing.Size(100, 34);
+            this.bCancel.TabIndex = 3;
+            this.bCancel.Text = "Cancel";
+            this.bCancel.UseVisualStyleBackColor = false;
+            // 
+            // bSaveSettings
+            // 
+            this.bSaveSettings.Location = new System.Drawing.Point(190, 148);
+            this.bSaveSettings.Name = "bSaveSettings";
+            this.bSaveSettings.Size = new System.Drawing.Size(110, 34);
+            this.bSaveSettings.TabIndex = 2;
+            this.bSaveSettings.Text = "Save";
+            this.bSaveSettings.UseVisualStyleBackColor = false;
+            this.bSaveSettings.Click += new System.EventHandler(this.bSaveSettings_Click);
             // 
             // SettingsForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AcceptButton = this.bSaveSettings;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(191, 98);
-            this.Controls.Add(this.mtbPort);
+            this.CancelButton = this.bCancel;
+            this.ClientSize = new System.Drawing.Size(320, 202);
+            this.Controls.Add(this.lIpAddress);
             this.Controls.Add(this.mtbIPAddress);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lPort);
+            this.Controls.Add(this.mtbPort);
+            this.Controls.Add(this.bCancel);
             this.Controls.Add(this.bSaveSettings);
+            this.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "SettingsForm";
-            this.Text = "Settings";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Server connection";
             this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -98,10 +118,11 @@ namespace WFChatClient
         }
 
         #endregion
+        private System.Windows.Forms.Label lIpAddress;
+        private System.Windows.Forms.MaskedTextBox mtbIPAddress;
+        private System.Windows.Forms.Label lPort;
+        private System.Windows.Forms.MaskedTextBox mtbPort;
+        private System.Windows.Forms.Button bCancel;
         private System.Windows.Forms.Button bSaveSettings;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        public System.Windows.Forms.MaskedTextBox mtbIPAddress;
-        public System.Windows.Forms.MaskedTextBox mtbPort;
     }
 }

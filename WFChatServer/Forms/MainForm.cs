@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -7,17 +6,32 @@ using System.Text;
 using System.Windows.Forms;
 using ChatShared;
 using ChatShared.Protocol;
+using WFChat.UI;
 
 namespace WFChatServer
 {
     public partial class MainForm : Form
     {
         readonly ControllerObject _controller = new ControllerObject();
+        readonly int _consoleWidth;
+        int _hiddenChatWidth;
         ChatServer _server;
 
         public MainForm()
         {
             InitializeComponent();
+            ApplyTheme();
+            _consoleWidth = pConsole.Width;
+        }
+
+        void ApplyTheme()
+        {
+            Theme.Apply(this);
+            Theme.StyleHeader(pHeader, lTitle, lStatus);
+            Theme.StylePrimary(bSend);
+            Theme.StyleTextFrame(pChatFrame, rtbChatObs);
+            Theme.StyleTextFrame(pConsoleFrame, tbController);
+            rtbChatObs.Font = Theme.ChatFont;
         }
 
         static string LogDirectory => Path.Combine(Environment.CurrentDirectory, "logs");
@@ -40,10 +54,12 @@ namespace WFChatServer
             try
             {
                 _server.Start(IPAddress.Parse(settings.IpAddress), settings.Port);
-                AppendChatLine("server started on " + _server.LocalEndPoint);
+                lStatus.Text = "Listening on " + _server.LocalEndPoint;
+                AppendChatNotice("server started on " + _server.LocalEndPoint);
             }
             catch (SocketException ex)
             {
+                lStatus.Text = "Not running: check the settings";
                 AppendControllerLine($"Cannot start the server on {settings.IpAddress}:{settings.Port}: {ex.Message}. Change the settings and restart.");
             }
         }
@@ -57,11 +73,11 @@ namespace WFChatServer
         #region Server events (raised on thread-pool threads)
         void Server_MessageBroadcast(ChatMessage message)
         {
-            string line = ChatMessageText.Format(message);
-            if (line != null)
+            RunOnUiThread(() =>
             {
-                RunOnUiThread(() => AppendChatLine(line));
-            }
+                ChatView.AppendMessage(rtbChatObs, message);
+                WriteLog(ChatMessageText.Format(message));
+            });
         }
 
         void Server_Log(string text)
@@ -86,10 +102,19 @@ namespace WFChatServer
         }
         #endregion
 
-        /// <summary>Shows a line in the chat panel and appends it to today's log file.</summary>
-        void AppendChatLine(string line)
+        void AppendChatNotice(string text)
         {
-            tbChatObs.AppendText(line + Environment.NewLine);
+            ChatView.AppendNotice(rtbChatObs, text);
+            WriteLog(text);
+        }
+
+        /// <summary>Appends a line to today's log file.</summary>
+        void WriteLog(string line)
+        {
+            if (line == null)
+            {
+                return;
+            }
             string logFilePath = Path.Combine(LogDirectory, "log-" + DateTime.Now.ToString("yy-MM-dd") + ".txt");
             try
             {
@@ -117,21 +142,6 @@ namespace WFChatServer
             this.ActiveControl = tbSendCommand; //workaround for avoid focus at tbChatObs
         }
 
-        private void tbSendCommand_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.SuppressKeyPress = true;
-                bSend_Click(sender, e);
-            }
-        }
-
-        private void tbChatObs_TextChanged(object sender, EventArgs e) //scroll to the end of the tbChatObs
-        {
-            tbChatObs.SelectionStart = tbChatObs.Text.Length;
-            tbChatObs.ScrollToCaret();
-        }
-
         private void tbController_TextChanged(object sender, EventArgs e) //scroll to the end of the tbController
         {
             tbController.SelectionStart = tbController.Text.Length;
@@ -140,35 +150,32 @@ namespace WFChatServer
 
         private void bCloseOpenChatTB_Click(object sender, EventArgs e)
         {
-
-            if (bCloseOpenChatTB.Text == "Hide chat")
+            if (pChatArea.Visible)
             {
-                tbChatObs.Hide();
-                bCloseOpenChatTB.Text = "Open chat";
-                this.Size = new Size(this.Size.Width - tbChatObs.Size.Width,
-                    this.Size.Height);
-                tbSendCommand.Anchor = AnchorStyles.Right | AnchorStyles.Bottom | AnchorStyles.Left;
-                pButtons.Anchor = AnchorStyles.Right | AnchorStyles.Bottom | AnchorStyles.Left;
-                tbController.Anchor = AnchorStyles.Right | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Top;
-
+                _hiddenChatWidth = pChatArea.Width + pGap.Width;
+                pChatArea.Visible = false;
+                pGap.Visible = false;
+                pConsole.Dock = DockStyle.Fill;
+                this.Width -= _hiddenChatWidth;
+                bCloseOpenChatTB.Text = "Show chat";
             }
             else
             {
-                tbSendCommand.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
-                pButtons.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
-                tbController.Anchor = AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Top;
-                tbChatObs.Show();
+                pConsole.Dock = DockStyle.Left;
+                pConsole.Width = _consoleWidth;
+                pGap.Visible = true;
+                pChatArea.Visible = true;
+                this.Width += _hiddenChatWidth;
                 bCloseOpenChatTB.Text = "Hide chat";
-                this.Size = new Size(this.Size.Width + 562,
-                    this.Size.Height);
-
             }
         }
 
         private void bSettings_Click(object sender, EventArgs e)
         {
-            SettingsForm fsettings = new SettingsForm();
-            fsettings.Show();
+            using (SettingsForm fsettings = new SettingsForm())
+            {
+                fsettings.ShowDialog(this);
+            }
         }
 
         #region ChatController

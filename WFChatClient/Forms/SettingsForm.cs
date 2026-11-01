@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
+using WFChat.UI;
 
 namespace WFChatClient
 {
@@ -9,6 +10,8 @@ namespace WFChatClient
         public SettingsForm()
         {
             InitializeComponent();
+            Theme.Apply(this);
+            Theme.StylePrimary(bSaveSettings);
         }
 
         private void bSaveSettings_Click(object sender, EventArgs e)

@@ -19,6 +19,7 @@
     <ProjectReference Include="..\WFChatServer\WFChatServer.csproj" />
     <ProjectReference Include="..\WFChatClient\WFChatClient.csproj" />
     <ProjectReference Include="..\ChatShared\ChatShared.csproj" />
+    <ProjectReference Include="..\WFChat.UI\WFChat.UI.csproj" />
   </ItemGroup>
 
 </Project>
