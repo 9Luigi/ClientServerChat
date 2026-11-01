@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.IO;
-using System.Xml.Serialization;
+using System.Windows.Forms;
 
 namespace WFChatServer
 {
@@ -11,75 +10,37 @@ namespace WFChatServer
         {
             InitializeComponent();
         }
-        [Serializable]
-        public class Settings
-        {
-            [XmlElement("ipaddr")] //keeps the element names of existing settings.xml files
-            public string IpAddress { get; set; }
-            [XmlElement("port")]
-            public int Port { get; set; }
-            public Settings(string ipAddress, int port)
-            {
-                this.IpAddress = ipAddress;
-                this.Port = port;
-            }
-            public Settings() { }
-        }
-        XmlSerializer _xmlSerializer;
-        FileStream _fs;
+
         private void bSaveSettings_Click(object sender, EventArgs e)
         {
-            if (mtbIPAddress.Text != "" && mtbPort.Text != "")
+            if (!int.TryParse(mtbPort.Text, out int port) || !ServerSettings.IsValid(mtbIPAddress.Text, port))
             {
-                try
-                {
-                    Settings settings = new Settings(mtbIPAddress.Text, Convert.ToInt32(mtbPort.Text));
-                    try
-                    {
-                        _xmlSerializer = new XmlSerializer(typeof(SettingsForm.Settings) );
-                        _fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
-                        _xmlSerializer.Serialize(_fs, settings);
-                        _fs.Close();
-
-                        MessageBox.Show("Succesful, reload the application for the changes to take effect");
-                        SettingsForm.ActiveForm.Close();
-                    }
-                    catch(Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
-                }
-                catch
-                {
-                    MessageBox.Show("Incorrect port or ip address");
-                }
-
+                MessageBox.Show("Incorrect port or ip address");
+                return;
             }
-            else
-            {
-                MessageBox.Show("Fill in all the fields");
-            }
-        }
-    private void SettingsForm_Load(object sender, EventArgs e)
-        {
-            _xmlSerializer = new XmlSerializer(typeof(SettingsForm.Settings) );
-            _fs = new FileStream("settings.xml", FileMode.OpenOrCreate);
             try
             {
-                Settings desSettings = (Settings)_xmlSerializer.Deserialize(_fs);
-
-
-                mtbIPAddress.Text = desSettings.IpAddress.ToString();
-                mtbPort.Text = desSettings.Port.ToString();
+                new ServerSettings { IpAddress = mtbIPAddress.Text, Port = port }.Save(ServerSettings.FileName);
             }
-            catch(Exception ex)
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
                 MessageBox.Show(ex.Message);
+                return;
             }
-            finally
+            MessageBox.Show("Succesful, reload the application for the changes to take effect");
+            Close();
+        }
+
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+            ServerSettings settings = ServerSettings.Load(ServerSettings.FileName);
+            if (settings == null)
             {
-                _fs.Close();
+                settings = ServerSettings.CreateDefault();
+                MessageBox.Show("Cannot load settings, default values were set");
             }
+            mtbIPAddress.Text = settings.IpAddress;
+            mtbPort.Text = settings.Port.ToString();
         }
     }
 }

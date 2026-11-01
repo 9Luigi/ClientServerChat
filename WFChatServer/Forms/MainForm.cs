@@ -1,49 +1,109 @@
 ﻿using System;
 using System.Drawing;
-using System.Windows.Forms;
-using System.Threading;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Windows.Forms;
+using ChatShared;
+using ChatShared.Protocol;
 
 namespace WFChatServer
 {
     public partial class MainForm : Form
     {
+        readonly ControllerObject _controller = new ControllerObject();
+        ChatServer _server;
+
         public MainForm()
         {
             InitializeComponent();
         }
-        internal static ServerObject Server;
-        static ControllerObject _controller;
-        static Thread _listenThread;
-        StreamWriter _logWriter;//Log file
+
+        static string LogDirectory => Path.Combine(Environment.CurrentDirectory, "logs");
+
         private void MainForm_Load(object sender, EventArgs e)
         {
+            _controller.ReturnCommandEvent += ControllerFunction;
+            Directory.CreateDirectory(LogDirectory);
 
+            ServerSettings settings = ServerSettings.Load(ServerSettings.FileName);
+            if (settings == null)
+            {
+                settings = ServerSettings.CreateDefault();
+                AppendControllerLine($"Cannot load settings, default was set: {settings.IpAddress}:{settings.Port}");
+            }
+
+            _server = new ChatServer(new DBHandler());
+            _server.MessageBroadcast += Server_MessageBroadcast;
+            _server.Log += Server_Log;
             try
             {
-                _controller = new ControllerObject();
-                Server = new ServerObject();
-                Server.DataBaseHandler.ErrorEvent += ShowEventMessage;
-                Server.ServerObjectToMainFormEvent += NotifyFromClientToMainForm;
-                Server.TransferEvent += NotifyFromClientToMainForm;
-                _controller.ReturnCommandEvent += ControllerFunction;
-
-                _listenThread = new Thread(new ThreadStart(Server.Listen)); //thread for listen
-                _listenThread.IsBackground = true; //thread will close after close main(entry point?) thread
-
-                _listenThread.Start();
+                _server.Start(IPAddress.Parse(settings.IpAddress), settings.Port);
+                AppendChatLine("server started on " + _server.LocalEndPoint);
             }
-            catch (Exception ex)
+            catch (SocketException ex)
             {
-                tbController.Text = ex.Message + ", click any button to continue" + Environment.NewLine;
-                Server.Disconnect();
+                AppendControllerLine($"Cannot start the server on {settings.IpAddress}:{settings.Port}: {ex.Message}. Change the settings and restart.");
             }
-            string path = Environment.CurrentDirectory + "\\logs";
-            if (Directory.Exists(path) == false)
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _server?.Stop();
+            base.OnFormClosed(e);
+        }
+
+        #region Server events (raised on thread-pool threads)
+        void Server_MessageBroadcast(ChatMessage message)
+        {
+            string line = ChatMessageText.Format(message);
+            if (line != null)
             {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\logs");
+                RunOnUiThread(() => AppendChatLine(line));
             }
+        }
+
+        void Server_Log(string text)
+        {
+            RunOnUiThread(() => AppendControllerLine(text));
+        }
+
+        /// <summary>Controls may only be touched from the UI thread; BeginInvoke queues the action there.</summary>
+        void RunOnUiThread(Action action)
+        {
+            if (IsDisposed || !IsHandleCreated)
+            {
+                return;
+            }
+            try
+            {
+                BeginInvoke(action);
+            }
+            catch (InvalidOperationException) //the form is closing
+            {
+            }
+        }
+        #endregion
+
+        /// <summary>Shows a line in the chat panel and appends it to today's log file.</summary>
+        void AppendChatLine(string line)
+        {
+            tbChatObs.AppendText(line + Environment.NewLine);
+            string logFilePath = Path.Combine(LogDirectory, "log-" + DateTime.Now.ToString("yy-MM-dd") + ".txt");
+            try
+            {
+                File.AppendAllText(logFilePath, line + Environment.NewLine, Encoding.Unicode);
+            }
+            catch (IOException ex)
+            {
+                AppendControllerLine("Cannot write the log: " + ex.Message);
+            }
+        }
+
+        void AppendControllerLine(string text)
+        {
+            tbController.AppendText(text + Environment.NewLine);
         }
 
         private void bSend_Click(object sender, EventArgs e)
@@ -66,14 +126,10 @@ namespace WFChatServer
             }
         }
 
-        private void tbChatObs_TextChanged(object sender, EventArgs e)
+        private void tbChatObs_TextChanged(object sender, EventArgs e) //scroll to the end of the tbChatObs
         {
-            string logFilePath = Environment.CurrentDirectory + "\\logs\\log-" + DateTime.Now.ToString("yy-MM-dd") + ".txt";
-            _logWriter = new StreamWriter(logFilePath, true, Encoding.Unicode);
             tbChatObs.SelectionStart = tbChatObs.Text.Length;
             tbChatObs.ScrollToCaret();
-            _logWriter.WriteLine(tbChatObs.Lines[tbChatObs.Lines.Length - 2]);//-2 cause of NewLine
-            _logWriter.Close();
         }
 
         private void tbController_TextChanged(object sender, EventArgs e) //scroll to the end of the tbController
@@ -114,44 +170,7 @@ namespace WFChatServer
             SettingsForm fsettings = new SettingsForm();
             fsettings.Show();
         }
-        #region EventFunctions
-        private void ShowEventMessage(string message)
-        {
-            this.Invoke(new Action(() => MessageBox.Show(message)));
-        }
 
-
-
-        //TODO bring the top functions (events) in line with notifySenderToMainForm(wich is below)
-        void NotifyFromClientToMainForm(ClientObject sender, ClientObjectEventArgs e)
-        {
-            switch (e.Target)
-            {
-                case "tbChatObs":
-                    this.Invoke(new Action(() => tbChatObs.Text += e.Message + Environment.NewLine));
-                    break;
-                case "tbController":
-                    this.Invoke(new Action(() => tbController.Text += e.Message + Environment.NewLine));
-                    break;
-                default:
-                    break;
-            }
-        }
-        void NotifyFromClientToMainForm(ServerObjectToMainFormEventArgs e)
-        {
-            switch (e.Context)
-            {
-                case "tbChatObs":
-                    this.Invoke(new Action(() => tbChatObs.Text += e.Message + Environment.NewLine));
-                    break;
-                case "tbController":
-                    this.Invoke(new Action(() => tbController.Text += e.Message + Environment.NewLine));
-                    break;
-                default:
-                    break;
-            }
-        }
-        #endregion
         #region ChatController
         void ControllerFunction(CommandEventArgs e)
         {
@@ -167,40 +186,31 @@ namespace WFChatServer
                     MessageBox.Show("test");
                     break;
                 case "disconnect":
-                    Environment.Exit(0);
+                    Close();
                     break;
                 default:
-                    tbController.Text += "Enter help to see possible commands list";
+                    AppendControllerLine("Enter help to see possible commands list");
                     break;
             }
         }
+
         internal void Help()
         {
-            this.Invoke(new Action(() => tbController.Text += String.Format("{0}: {1}", "Exit: ", "Close the application") + Environment.NewLine));
-            this.Invoke(new Action(() => tbController.Text += String.Format("{0}: {1}", "Users: ", "Print users list") + Environment.NewLine));
+            AppendControllerLine(String.Format("{0}: {1}", "Exit: ", "Close the application"));
+            AppendControllerLine(String.Format("{0}: {1}", "Users: ", "Print users list"));
         }
+
         internal void ClientUserNamesPrint()
         {
-            try
+            var users = _server?.GetOnlineUsers();
+            if (users == null || users.Count == 0)
             {
-
-                if (Server.Clients.Count > 0)
-                {
-                    for (int i = 0; i < Server.Clients.Count; i++)
-                    {
-                        /* Program.fMainReferense.tbController.Text = fMain.server.clients[i].userName + Environment.NewLine;*/
-                        this.Invoke(new Action(() => tbController.Text += Server.Clients[i].UserName + Environment.NewLine));
-                    }
-                }
-                else
-                {
-                    /*Program.fMainReferense.tbController.Text += "is empty" + Environment.NewLine;*/
-                    this.Invoke(new Action(() => tbController.Text += "no users are connected" + Environment.NewLine));
-                }
+                AppendControllerLine("no users are connected");
+                return;
             }
-            catch
+            foreach (string user in users)
             {
-
+                AppendControllerLine(user);
             }
         }
         #endregion

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatShared", "ChatShared\Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatShared.Tests", "ChatShared.Tests\ChatShared.Tests.csproj", "{490CD3FB-F97B-4371-99F7-187B1F559A26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WFChat.Tests", "WFChat.Tests\WFChat.Tests.csproj", "{50DDB084-D4CB-4906-94AD-21BD887ADBF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Alpha 1.0|Any CPU = Alpha 1.0|Any CPU
@@ -177,6 +179,42 @@ Global
 		{490CD3FB-F97B-4371-99F7-187B1F559A26}.Release|x64.Build.0 = Release|Any CPU
 		{490CD3FB-F97B-4371-99F7-187B1F559A26}.Release|x86.ActiveCfg = Release|Any CPU
 		{490CD3FB-F97B-4371-99F7-187B1F559A26}.Release|x86.Build.0 = Release|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Alpha 1.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Alpha 1.0|Any CPU.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Alpha 1.0|x64.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Alpha 1.0|x64.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Alpha 1.0|x86.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Alpha 1.0|x86.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat client alpha 1.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat client alpha 1.0|Any CPU.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat client alpha 1.0|x64.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat client alpha 1.0|x64.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat client alpha 1.0|x86.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat client alpha 1.0|x86.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server Alpha 1.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server Alpha 1.0|Any CPU.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server Alpha 1.0|x64.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server Alpha 1.0|x64.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server Alpha 1.0|x86.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server Alpha 1.0|x86.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server-client alpha 1.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server-client alpha 1.0|Any CPU.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server-client alpha 1.0|x64.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server-client alpha 1.0|x64.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server-client alpha 1.0|x86.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Chat server-client alpha 1.0|x86.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Debug|x64.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Debug|x86.Build.0 = Debug|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Release|x64.ActiveCfg = Release|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Release|x64.Build.0 = Release|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Release|x86.ActiveCfg = Release|Any CPU
+		{50DDB084-D4CB-4906-94AD-21BD887ADBF9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

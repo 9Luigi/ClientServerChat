@@ -84,13 +84,48 @@ namespace ChatShared.Tests
         public async Task Long_message_is_not_cut()
         {
             using var pair = await TcpPair.CreateAsync();
-            string text = new string('x', 200_000);
+            string text = new string('x', ChatConnection.DefaultMaxMessageLength - 100); //just under the limit, many read buffers long
 
-            Task send = pair.Client.SendAsync(new SendText(text)); //larger than socket buffers, so read while sending
+            Task send = pair.Client.SendAsync(new SendText(text)); //may be larger than socket buffers, so read while sending
             ChatMessage received = await pair.Server.ReceiveAsync();
             await send;
 
             Assert.Equal(text, Assert.IsType<SendText>(received).Text);
+        }
+
+        [Fact]
+        public async Task Sending_a_too_long_message_throws_and_sends_nothing()
+        {
+            using var stream = new MemoryStream();
+            using var connection = new ChatConnection(stream, maxMessageLength: 50);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => connection.SendAsync(new SendText(new string('x', 50))));
+
+            Assert.Equal(0, stream.Length);
+        }
+
+        [Fact]
+        public async Task Receiving_a_too_long_line_throws_without_waiting_for_its_end()
+        {
+            using var pair = await TcpPair.CreateAsync();
+            using var limitedServer = new ChatConnection(pair.ServerStream, maxMessageLength: 1000);
+
+            byte[] endless = Encoding.UTF8.GetBytes(new string('x', 5000)); //no '\n' at all
+            await pair.ClientStream.WriteAsync(endless);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => limitedServer.ReceiveAsync());
+        }
+
+        [Fact]
+        public async Task Line_ending_with_CRLF_is_accepted()
+        {
+            Assert.Equal(new SendText("hi"), await ReadFromWire("{\"type\":\"text\",\"text\":\"hi\"}\r\n"));
+        }
+
+        [Fact]
+        public async Task Unfinished_last_line_counts_as_closed_connection()
+        {
+            Assert.Null(await ReadFromWire("{\"type\":\"text\",\"text\":\"cut of"));
         }
 
         [Fact]
@@ -187,6 +222,8 @@ namespace ChatShared.Tests
             readonly TcpClient _serverSocket;
             public ChatConnection Client { get; }
             public ChatConnection Server { get; }
+            public NetworkStream ClientStream => _clientSocket.GetStream();
+            public NetworkStream ServerStream => _serverSocket.GetStream();
 
             TcpPair(TcpClient clientSocket, TcpClient serverSocket)
             {

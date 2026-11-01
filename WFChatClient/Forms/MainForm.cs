@@ -1,184 +1,140 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.IO;
-using System.Xml.Serialization;
-using System.Diagnostics;
+using System.Windows.Forms;
+using ChatShared;
+using ChatShared.Protocol;
 
 namespace WFChatClient
 {
     public partial class MainForm : Form
     {
-        TcpClient Client { get; set; }
-        NetworkStream Stream { get; set; }
-        IPAddress IpAddress { get; set; }
-        int Port { get; set; }
-        string UserName { get; set; }
-        string Password { get; set; }
-        Thread ReceiveThread { get; set; }
+        ChatClient _chat; //null while the login screen is shown
+        readonly Size _loginSize;
+
         public MainForm()
         {
             InitializeComponent();
+            _loginSize = this.Size;
         }
-        XmlSerializer XmlSerializer { get; set; }
-        FileStream FileStream { get; set; }
-        //TODO space can movecoret ~
-        private void bSend_Click(object sender, EventArgs e)
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            _chat?.Dispose();
+            base.OnFormClosed(e);
+        }
+
+        internal async void bLogin_Click(object sender, EventArgs e)
+        {
+            ClientSettings settings = ClientSettings.Load(ClientSettings.FileName) ?? ClientSettings.CreateDefault();
+            var chat = new ChatClient();
+            chat.MessageReceived += Chat_MessageReceived;
+            chat.Disconnected += Chat_Disconnected;
+
+            bLogin.Enabled = false;
             try
             {
-                string message = tbSend.Text;
-                tbSend.Text = "";
-                byte[] bytes = Encoding.Unicode.GetBytes(message);
-                Stream.Write(bytes, 0, bytes.Length);
-                tbReceive.Text += Environment.NewLine + message;
-            }
-            catch (Exception ex)
-            {
-                tbReceive.Text += ex.Message;
-                Disconnect();
-                MessageBox.Show("Cannot communicate with server, try again later please");
-                Environment.Exit(0);
-            }
-        }
-        private void ReceiveMessage()
-        {
-            StringBuilder builder;
-            int length;
-            try
-            {
-                while (true)
+                LoginResult result = await chat.ConnectAsync(IPAddress.Parse(settings.IpAddress), settings.Port, tbUsername.Text, tbPassword.Text);
+                if (!result.Success)
                 {
-                    try
-                    {
-                        do
-                        {
-                            byte[] bytes = new byte[256];
-                            builder = new StringBuilder(); //buidler appends buffer bytes from stream until data available in stream
-                            length = Stream.Read(bytes, 0, bytes.Length);
-                            builder.Append(Encoding.Unicode.GetString(bytes, 0, length));
-                        }
-                        while (Stream.DataAvailable);
-                        tbReceive.Text += Environment.NewLine + builder.ToString();
-                    }
-                    catch
-                    {
-                        this.Invoke(new Action(() => tbSend.Enabled = false));
-                        this.Invoke(new Action(() => bSend.Enabled = false));
-
-                        Disconnect();
-                        MessageBox.Show("Cannot communicate with server, try again later please");
-                        Environment.Exit(0);
-                    }
+                    MessageBox.Show(LoginErrorText(result.Error));
+                    return;
                 }
-
+                _chat = chat;
+                CloseLoginAndOpenChat();
+                tbReceive.Text = String.Format("Welcome {0}!", tbUsername.Text);
+                chat.StartReceiving(); //after the chat view is ready, so no message lands on the login screen
             }
-            catch
+            catch (Exception ex) when (ex is SocketException || ex is IOException || ex is InvalidDataException || ex is OperationCanceledException)
             {
-                Disconnect();
+                Debug.WriteLine(ex);
                 MessageBox.Show("Cannot communicate with server, try again later please");
-                Environment.Exit(0);
+            }
+            finally
+            {
+                bLogin.Enabled = true;
             }
         }
-        private void Disconnect()
+
+        static string LoginErrorText(LoginError? error)
         {
-            if (Stream != null)
+            switch (error)
             {
-                Stream.Close();
-            }
-            if (Client != null)
-            {
-                Client.Close();
+                case LoginError.UserNotFound:
+                    return "User is not found, try again";
+                case LoginError.IncorrectPassword:
+                    return "Incorrect password, try again";
+                default:
+                    return "Server error, try again later please";
             }
         }
+
+        private async void bSend_Click(object sender, EventArgs e)
+        {
+            string message = tbSend.Text;
+            if (_chat == null || string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+            tbSend.Text = "";
+            try
+            {
+                await _chat.SendTextAsync(message); //the server sends it back to everyone, including us
+            }
+            catch (Exception ex) when (ex is IOException || ex is SocketException || ex is ObjectDisposedException || ex is InvalidOperationException)
+            {
+                Debug.WriteLine(ex); //a lost connection is reported by Chat_Disconnected
+            }
+        }
+
+        #region Chat events (raised on thread-pool threads)
+        void Chat_MessageReceived(ChatMessage message)
+        {
+            string line = ChatMessageText.Format(message);
+            if (line != null)
+            {
+                RunOnUiThread(() => tbReceive.AppendText(Environment.NewLine + line));
+            }
+        }
+
+        void Chat_Disconnected(Exception error)
+        {
+            if (error != null)
+            {
+                Debug.WriteLine(error);
+            }
+            RunOnUiThread(() =>
+            {
+                _chat = null;
+                ShowLogin();
+                MessageBox.Show("Connection to the server was lost");
+            });
+        }
+
+        /// <summary>Controls may only be touched from the UI thread; BeginInvoke queues the action there.</summary>
+        void RunOnUiThread(Action action)
+        {
+            if (IsDisposed || !IsHandleCreated)
+            {
+                return;
+            }
+            try
+            {
+                BeginInvoke(action);
+            }
+            catch (InvalidOperationException) //the form is closing
+            {
+            }
+        }
+        #endregion
 
         private void tbReceive_TextChanged(object sender, EventArgs e)
         {
             tbReceive.SelectionStart = tbReceive.Text.Length;
             tbReceive.ScrollToCaret();
-        }
-
-        internal void bLogin_Click(object sender, EventArgs e)
-        {
-            UserName = tbUsername.Text;
-            Password = tbPassword.Text;
-            StringBuilder builder;
-            int length;
-            try
-            {
-                #region desirializeSettings
-                try
-                {
-                    XmlSerializer = new XmlSerializer(typeof(SettingsForm.Settings));
-                    FileStream = new FileStream("settings.xml", FileMode.OpenOrCreate);
-                    SettingsForm.Settings desSettings = (SettingsForm.Settings)XmlSerializer.Deserialize(FileStream);
-
-
-                    IpAddress = IPAddress.Parse(desSettings.IpAddress);
-                    Port = desSettings.Port;
-                }
-                catch
-                {
-                    IpAddress = IPAddress.Parse("192.168.0.5");
-                    Port = 8888;
-                }
-                finally
-                {
-                    FileStream.Close();
-                }
-                #endregion
-                Client = new TcpClient();
-
-                Client.Connect(IpAddress, Port);
-                Stream = Client.GetStream();
-                string message = UserName + " " + Password;
-                byte[] bytes = Encoding.Unicode.GetBytes(message);
-                Stream.Write(bytes, 0, bytes.Length);
-                do
-                {
-                    byte[] receiveBytes = new byte[256];
-                    builder = new StringBuilder(); //builder appends buffer bytes from stream until data available in stream
-                    length = Stream.Read(receiveBytes, 0, receiveBytes.Length);
-                    builder.Append(Encoding.Unicode.GetString(receiveBytes, 0, length));
-                }
-                while (Stream.DataAvailable);
-                if (builder.ToString() == "User is not found")
-                {
-                    Disconnect();
-                    this.Invoke(new Action(() => MessageBox.Show("User is not found, try again")));
-                }
-                else
-                if (builder.ToString() == "Incorrect password")
-                {
-                    Disconnect();
-                    this.Invoke(new Action(() => MessageBox.Show("Incorrect password, try again")));
-                }
-                else if(builder.ToString() == "OK")
-                {
-
-                    CloseLoginAndOpenChat();
-                    tbReceive.Text = String.Format("Welcome {0}!", tbUsername.Text);
-
-                    ReceiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                    ReceiveThread.IsBackground = true;
-                    ReceiveThread.Start();
-
-                }
-            }
-            catch(Exception ex)
-            {
-                tbSend.Enabled = false;
-                bSend.Enabled = false;
-
-                Disconnect();
-                Debug.WriteLine(ex.Message);
-                MessageBox.Show("Cannot communicate with server, try again later please");
-                Environment.Exit(0);
-            }
         }
 
         private void tbSend_KeyDown(object sender, KeyEventArgs e)
@@ -214,20 +170,35 @@ namespace WFChatClient
             SettingsForm fsettings = new SettingsForm();
             fsettings.ShowDialog();
         }
+
         internal void CloseLoginAndOpenChat()
         {
-            bLogin.Visible = false;
-            tbPassword.Visible = false;
-            tbUsername.Visible = false;
-            tbReceive.Visible = true;
-            tbSend.Visible = true;
-            bSend.Visible = true;
-            label1.Visible = false;
-            label2.Visible = false;
-            lSymbolLeftCount.Visible = true;
-            bChangeServer.Visible = false;
+            SetChatVisible(true);
             this.Size = new Size(816, 489);
             this.ActiveControl = tbSend;
+        }
+
+        void ShowLogin()
+        {
+            SetChatVisible(false);
+            tbReceive.Clear();
+            tbSend.Clear();
+            this.Size = _loginSize;
+            this.ActiveControl = tbUsername;
+        }
+
+        void SetChatVisible(bool chat)
+        {
+            bLogin.Visible = !chat;
+            tbPassword.Visible = !chat;
+            tbUsername.Visible = !chat;
+            label1.Visible = !chat;
+            label2.Visible = !chat;
+            bChangeServer.Visible = !chat;
+            tbReceive.Visible = chat;
+            tbSend.Visible = chat;
+            bSend.Visible = chat;
+            lSymbolLeftCount.Visible = chat;
         }
     }
 }

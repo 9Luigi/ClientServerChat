@@ -86,4 +86,8 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChatShared\ChatShared.csproj" />
+  </ItemGroup>
+
 </Project>
