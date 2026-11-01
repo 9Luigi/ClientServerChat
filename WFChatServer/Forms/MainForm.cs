@@ -4,8 +4,6 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Text;
-using static System.Windows.Forms.AxHost;
-using Microsoft.Win32;
 
 namespace WFChatServer
 {

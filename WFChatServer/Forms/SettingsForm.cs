@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Net;
 using System.Xml.Serialization;
 
 namespace WFChatServer

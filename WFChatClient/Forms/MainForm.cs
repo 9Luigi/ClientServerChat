@@ -6,11 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading.Tasks;
-using System.Reflection;
 using System.Xml.Serialization;
-using WFChatClient.Properties;
 using System.Diagnostics;
 
 namespace WFChatClient

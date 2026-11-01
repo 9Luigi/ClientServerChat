@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
-using System.Windows.Forms;
 
 namespace WFChatServer
 {

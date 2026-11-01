@@ -6,11 +6,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using System.Text;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
-using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
-using WFChatServer.Properties;
 
 namespace WFChatServer
 {
