@@ -32,7 +32,7 @@ namespace WFChatClient
             this.pHeader = new System.Windows.Forms.Panel();
             this.lTitle = new System.Windows.Forms.Label();
             this.lSubtitle = new System.Windows.Forms.Label();
-            this.pLogin = new System.Windows.Forms.Panel();
+            this.pLogin = new WFChat.UI.MatrixRain();
             this.pLoginCard = new System.Windows.Forms.Panel();
             this.lUsername = new System.Windows.Forms.Label();
             this.tbUsername = new System.Windows.Forms.TextBox();
@@ -294,7 +294,7 @@ namespace WFChatClient
         private System.Windows.Forms.Panel pHeader;
         private System.Windows.Forms.Label lTitle;
         private System.Windows.Forms.Label lSubtitle;
-        private System.Windows.Forms.Panel pLogin;
+        private WFChat.UI.MatrixRain pLogin;
         private System.Windows.Forms.Panel pLoginCard;
         private System.Windows.Forms.Label lUsername;
         private System.Windows.Forms.TextBox tbUsername;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -50,7 +50,7 @@ namespace WFChat.Tests
         }
 
         [Fact]
-        public void Own_name_is_navy()
+        public void Own_name_is_highlighted()
         {
             RunInSta(() =>
             {
@@ -58,7 +58,7 @@ namespace WFChat.Tests
 
                 ChatView.AppendMessage(box, new ChatText("bob", "hello", LocalTime), currentUserName: "bob");
 
-                Assert.Equal(Theme.Primary, ColorAt(box, "bob"));
+                Assert.Equal(Theme.OwnName, ColorAt(box, "bob"));
             });
         }
 

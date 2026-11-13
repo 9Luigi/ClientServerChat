@@ -31,6 +31,7 @@ namespace WFChatClient
             Theme.Apply(this);
             Theme.StyleHeader(pHeader, lTitle, lSubtitle);
             Theme.StyleCard(pLoginCard);
+            pLogin.Interval = 65; //the rain behind the login card falls a little slower than on the splash screen
             Theme.StylePrimary(bLogin);
             Theme.StylePrimary(bSend);
             Theme.StyleMuted(lServer);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using ChatShared;
@@ -8,7 +8,7 @@ namespace WFChat.UI
 {
     /// <summary>
     /// Writes chat messages into a RichTextBox with colors: gray time, the user name in its own color
-    /// (navy and bold for the current user), gray italic notices for joins and leaves.
+    /// (almost white for the current user), dim italic notices for joins and leaves.
     /// </summary>
     public static class ChatView
     {
@@ -21,7 +21,7 @@ namespace WFChat.UI
                     StartLine(box);
                     Append(box, ChatMessageText.FormatTime(text.Time) + "  ", Theme.TextMuted, Theme.ChatFont);
                     bool isMe = currentUserName != null && string.Equals(text.From, currentUserName, StringComparison.OrdinalIgnoreCase);
-                    Append(box, text.From, isMe ? Theme.Primary : UserColors.For(text.From), Theme.ChatFontBold);
+                    Append(box, text.From, isMe ? Theme.OwnName : UserColors.For(text.From), Theme.ChatFontBold);
                     Append(box, ": " + text.Text, Theme.Text, Theme.ChatFont);
                     break;
                 case UserJoined joined:
