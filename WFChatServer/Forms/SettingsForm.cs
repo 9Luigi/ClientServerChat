@@ -23,7 +23,7 @@ namespace WFChatServer
             }
             try
             {
-                new ServerSettings { IpAddress = mtbIPAddress.Text, Port = port }.Save(ServerSettings.FileName);
+                new ServerSettings { IpAddress = mtbIPAddress.Text, Port = port }.Save(ServerSettings.DefaultPath);
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
@@ -36,7 +36,7 @@ namespace WFChatServer
 
         private void SettingsForm_Load(object sender, EventArgs e)
         {
-            ServerSettings settings = ServerSettings.Load(ServerSettings.FileName);
+            ServerSettings settings = ServerSettings.Load(ServerSettings.DefaultPath);
             if (settings == null)
             {
                 settings = ServerSettings.CreateDefault();

@@ -10,6 +10,9 @@ namespace WFChatServer
     public class ServerSettings
     {
         public const string FileName = "settings.xml";
+
+        /// <summary>settings.xml in the program folder, wherever the program was started from.</summary>
+        public static string DefaultPath => Path.Combine(AppContext.BaseDirectory, FileName);
         public const int DefaultPort = 8888;
 
         static readonly XmlSerializer Serializer = new XmlSerializer(typeof(ServerSettings));

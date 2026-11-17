@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Windows.Forms;
 using ChatShared;
 using ChatShared.Protocol;
@@ -12,7 +11,6 @@ namespace WFChatServer
 {
     public partial class MainForm : Form
     {
-        readonly ControllerObject _controller = new ControllerObject();
         readonly int _consoleWidth;
         int _hiddenChatWidth;
         ChatServer _server;
@@ -34,14 +32,13 @@ namespace WFChatServer
             rtbChatObs.Font = Theme.ChatFont;
         }
 
-        static string LogDirectory => Path.Combine(Environment.CurrentDirectory, "logs");
+        static string LogDirectory => Path.Combine(AppContext.BaseDirectory, "logs");
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            _controller.ReturnCommandEvent += ControllerFunction;
             Directory.CreateDirectory(LogDirectory);
 
-            ServerSettings settings = ServerSettings.Load(ServerSettings.FileName);
+            ServerSettings settings = ServerSettings.Load(ServerSettings.DefaultPath);
             if (settings == null)
             {
                 settings = ServerSettings.CreateDefault();
@@ -118,7 +115,7 @@ namespace WFChatServer
             string logFilePath = Path.Combine(LogDirectory, "log-" + DateTime.Now.ToString("yy-MM-dd") + ".txt");
             try
             {
-                File.AppendAllText(logFilePath, line + Environment.NewLine, Encoding.Unicode);
+                File.AppendAllText(logFilePath, line + Environment.NewLine); //UTF-8; log files written before 2026-11-17 are UTF-16
             }
             catch (IOException ex)
             {
@@ -133,7 +130,7 @@ namespace WFChatServer
 
         private void bSend_Click(object sender, EventArgs e)
         {
-            _controller.Controller(tbSendCommand.Text);
+            RunCommand(tbSendCommand.Text);
             tbSendCommand.Text = "";
         }
 
@@ -179,32 +176,31 @@ namespace WFChatServer
         }
 
         #region ChatController
-        void ControllerFunction(CommandEventArgs e)
+        /// <summary>Commands typed into tbSendCommand.</summary>
+        void RunCommand(string command)
         {
-            switch (e.Message)
+            switch (command.Trim().ToLowerInvariant())
             {
-                case "help":
-                    Help();
-                    break;
                 case "users":
                     ClientUserNamesPrint();
                     break;
-                case "test":
-                    MessageBox.Show("test");
-                    break;
-                case "disconnect":
+                case "exit":
                     Close();
                     break;
+                case "help":
+                    Help();
+                    break;
                 default:
-                    AppendControllerLine("Enter help to see possible commands list");
+                    AppendControllerLine("Unknown command. Enter help to see the commands list");
                     break;
             }
         }
 
-        internal void Help()
+        void Help()
         {
-            AppendControllerLine(String.Format("{0}: {1}", "Exit: ", "Close the application"));
-            AppendControllerLine(String.Format("{0}: {1}", "Users: ", "Print users list"));
+            AppendControllerLine("users: print the users list");
+            AppendControllerLine("exit: close the application");
+            AppendControllerLine("help: this list");
         }
 
         internal void ClientUserNamesPrint()

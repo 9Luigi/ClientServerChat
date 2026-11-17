@@ -11,6 +11,9 @@ namespace WFChatClient
     {
         public const string FileName = "settings.xml";
 
+        /// <summary>settings.xml in the program folder, wherever the program was started from.</summary>
+        public static string DefaultPath => Path.Combine(AppContext.BaseDirectory, FileName);
+
         static readonly XmlSerializer Serializer = new XmlSerializer(typeof(ClientSettings));
 
         [XmlElement("port")]
@@ -21,7 +24,7 @@ namespace WFChatClient
 
         public static ClientSettings CreateDefault()
         {
-            return new ClientSettings { IpAddress = "192.168.0.5", Port = 8888 };
+            return new ClientSettings { IpAddress = IPAddress.Loopback.ToString(), Port = 8888 };
         }
 
         /// <summary>Returns null if the file is missing, unreadable or contains an invalid address or port.</summary>

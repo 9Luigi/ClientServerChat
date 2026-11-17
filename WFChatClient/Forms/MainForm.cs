@@ -48,7 +48,7 @@ namespace WFChatClient
 
         static ClientSettings LoadSettings()
         {
-            return ClientSettings.Load(ClientSettings.FileName) ?? ClientSettings.CreateDefault();
+            return ClientSettings.Load(ClientSettings.DefaultPath) ?? ClientSettings.CreateDefault();
         }
 
         void ShowServerAddress()
@@ -112,10 +112,10 @@ namespace WFChatClient
             {
                 return;
             }
-            tbSend.Text = "";
             try
             {
                 await _chat.SendTextAsync(message); //the server sends it back to everyone, including us
+                tbSend.Text = ""; //only after a successful send, so a failed message isn't lost
             }
             catch (Exception ex) when (ex is IOException || ex is SocketException || ex is ObjectDisposedException || ex is InvalidOperationException)
             {
@@ -163,14 +163,31 @@ namespace WFChatClient
         private void tbSend_KeyDown(object sender, KeyEventArgs e)
         {
             //Enter sends through AcceptButton (bSend) while the chat is shown
-            if (e.KeyCode == Keys.Back)
+            if (e.Control && e.KeyCode == Keys.Back)
             {
-                e.SuppressKeyPress = true;
-                if (tbSend.SelectionStart > 0)
-                {
-                    SendKeys.Send("+{LEFT}{DEL}"); //delete a word with ctrl+backspace, don't undestand how yet
-                }
+                e.SuppressKeyPress = true; //otherwise TextBox inserts a square symbol instead of deleting
+                DeleteWordBeforeCaret(tbSend);
             }
+        }
+
+        /// <summary>Ctrl+Backspace: deletes the selection, or the word before the caret with the spaces after it.</summary>
+        static void DeleteWordBeforeCaret(TextBox box)
+        {
+            if (box.SelectionLength == 0)
+            {
+                int end = box.SelectionStart;
+                int start = end;
+                while (start > 0 && char.IsWhiteSpace(box.Text[start - 1]))
+                {
+                    start--;
+                }
+                while (start > 0 && !char.IsWhiteSpace(box.Text[start - 1]))
+                {
+                    start--;
+                }
+                box.Select(start, end - start);
+            }
+            box.SelectedText = "";
         }
 
         private void rtbReceive_Enter(object sender, EventArgs e)

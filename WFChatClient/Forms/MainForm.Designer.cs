@@ -127,7 +127,6 @@ namespace WFChatClient
             this.tbUsername.Name = "tbUsername";
             this.tbUsername.Size = new System.Drawing.Size(252, 25);
             this.tbUsername.TabIndex = 1;
-            this.tbUsername.Text = "Roman";
             //
             // lPassword
             //
@@ -144,7 +143,6 @@ namespace WFChatClient
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.Size = new System.Drawing.Size(252, 25);
             this.tbPassword.TabIndex = 3;
-            this.tbPassword.Text = "Roman112233";
             this.tbPassword.UseSystemPasswordChar = true;
             //
             // bLogin

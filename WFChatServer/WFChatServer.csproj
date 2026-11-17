@@ -16,11 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="DBRegisteredUsersDataSet1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>dbRegisteredUsersDataSet.xsd</DependentUpon>
-    </Compile>
     <Compile Update="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -59,17 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="dbRegisteredUsersDataSet.xsc">
-      <DependentUpon>dbRegisteredUsersDataSet.xsd</DependentUpon>
-    </None>
-    <None Update="dbRegisteredUsersDataSet.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>DBRegisteredUsersDataSet1.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
-    <None Update="dbRegisteredUsersDataSet.xss">
-      <DependentUpon>dbRegisteredUsersDataSet.xsd</DependentUpon>
-    </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
