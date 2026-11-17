@@ -54,7 +54,7 @@ namespace WFChat.Tests
 
             LoginResult result = await chat.ConnectAsync(IPAddress.Loopback, Port, "bob", "wrong");
 
-            Assert.Equal(new LoginResult(false, LoginError.IncorrectPassword), result);
+            Assert.Equal(new LoginResult(false, LoginError.InvalidCredentials), result);
         }
 
         [Fact]

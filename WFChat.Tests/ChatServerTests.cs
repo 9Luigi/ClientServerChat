@@ -44,16 +44,17 @@ namespace WFChat.Tests
         }
 
         [Theory]
-        [InlineData("bob", "wrong", LoginError.IncorrectPassword)]
-        [InlineData("nobody", "x", LoginError.UserNotFound)]
-        [InlineData("", "x", LoginError.UserNotFound)]
-        public async Task Refused_login_gets_the_reason_and_is_disconnected(string userName, string password, LoginError expected)
+        [InlineData("bob", "wrong")]
+        [InlineData("nobody", "x")]
+        [InlineData("", "x")]
+        [InlineData("bob", null)]
+        public async Task Wrong_name_or_password_gets_the_same_answer_and_is_disconnected(string userName, string password)
         {
             TestClient client = await ConnectAsync();
 
             await client.SendAsync(new LoginRequest(userName, password));
 
-            Assert.Equal(new LoginResult(false, expected), await client.ReceiveAsync());
+            Assert.Equal(new LoginResult(false, LoginError.InvalidCredentials), await client.ReceiveAsync());
             await client.AssertClosedByServerAsync();
             Assert.Empty(_server.GetOnlineUsers());
         }
@@ -79,6 +80,70 @@ namespace WFChat.Tests
                 Assert.Equal("alice", text.From);
                 Assert.Equal("hi", text.Text);
             }
+        }
+
+        [Theory]
+        [InlineData("bob")]
+        [InlineData("BOB")]
+        public async Task Second_login_with_an_online_name_is_refused(string secondName)
+        {
+            await LoginAsync("bob", "bob-pass");
+            _authenticator.AcceptAnyCase = true;
+            TestClient second = await ConnectAsync();
+
+            await second.SendAsync(new LoginRequest(secondName, "bob-pass"));
+
+            Assert.Equal(new LoginResult(false, LoginError.AlreadyLoggedIn), await second.ReceiveAsync());
+            await second.AssertClosedByServerAsync();
+            Assert.Equal(new[] { "bob" }, _server.GetOnlineUsers());
+        }
+
+        [Fact]
+        public async Task Name_is_free_again_after_the_user_leaves()
+        {
+            TestClient bob = await LoginAsync("bob", "bob-pass");
+            TestClient alice = await LoginAsync("alice", "alice pass");
+            await bob.ReceiveAsync<UserJoined>();
+
+            bob.Dispose();
+            await alice.ReceiveAsync<UserLeft>();
+
+            await LoginAsync("bob", "bob-pass");
+        }
+
+        [Fact]
+        public async Task Line_breaks_in_a_text_become_spaces()
+        {
+            TestClient bob = await LoginAsync("bob", "bob-pass");
+
+            await bob.SendAsync(new SendText("hi\n12:00:00  alice: fake\r\tline"));
+
+            Assert.Equal("hi 12:00:00  alice: fake  line", (await bob.ReceiveAsync<ChatText>()).Text);
+        }
+
+        [Fact]
+        public async Task Too_long_text_is_cut()
+        {
+            TestClient bob = await LoginAsync("bob", "bob-pass");
+
+            await bob.SendAsync(new SendText(new string('x', SendText.MaxLength + 10)));
+
+            Assert.Equal(new string('x', SendText.MaxLength), (await bob.ReceiveAsync<ChatText>()).Text);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("\n\r\t")]
+        [InlineData(null)]
+        public async Task Empty_text_is_not_relayed(string text)
+        {
+            TestClient bob = await LoginAsync("bob", "bob-pass");
+
+            await bob.SendAsync(new SendText(text));
+            await bob.SendAsync(new SendText("next"));
+
+            Assert.Equal("next", (await bob.ReceiveAsync<ChatText>()).Text); //the empty one was skipped
         }
 
         [Fact]

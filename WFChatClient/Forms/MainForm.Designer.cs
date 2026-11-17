@@ -225,7 +225,6 @@ namespace WFChatClient
             //
             this.tbSend.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbSend.Location = new System.Drawing.Point(0, 10);
-            this.tbSend.MaxLength = 250;
             this.tbSend.Multiline = true;
             this.tbSend.Name = "tbSend";
             this.tbSend.Size = new System.Drawing.Size(232, 62);

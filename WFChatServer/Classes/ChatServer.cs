@@ -19,6 +19,7 @@ namespace WFChatServer
     {
         readonly IUserAuthenticator _authenticator;
         readonly List<ClientConnection> _clients = new List<ClientConnection>(); //logged-in clients only; guarded by lock (_clients)
+        readonly HashSet<string> _userNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //names taken by logged-in clients; guarded by lock (_clients)
         TcpListener _listener;
         CancellationTokenSource _stopping;
 
@@ -129,9 +130,13 @@ namespace WFChatServer
                     {
                         break; //the client closed the connection
                     }
-                    if (message is SendText text && text.Text != null)
+                    if (message is SendText send)
                     {
-                        await BroadcastAsync(new ChatText(client.UserName, text.Text, DateTimeOffset.Now)).ConfigureAwait(false);
+                        string text = CleanText(send.Text);
+                        if (text.Length > 0)
+                        {
+                            await BroadcastAsync(new ChatText(client.UserName, text, DateTimeOffset.Now)).ConfigureAwait(false);
+                        }
                     }
                     else
                     {
@@ -155,11 +160,12 @@ namespace WFChatServer
             }
             finally
             {
-                if (joined)
+                if (client.UserName != null)
                 {
                     lock (_clients)
                     {
                         _clients.Remove(client); //before Close, so broadcasts don't try to send to a closed socket
+                        _userNames.Remove(client.UserName); //the name is free again
                     }
                 }
                 client.Close();
@@ -198,13 +204,9 @@ namespace WFChatServer
             }
 
             LoginError? error;
-            if (string.IsNullOrEmpty(login.UserName))
+            if (string.IsNullOrEmpty(login.UserName) || login.Password == null)
             {
-                error = LoginError.UserNotFound;
-            }
-            else if (login.Password == null)
-            {
-                error = LoginError.IncorrectPassword;
+                error = LoginError.InvalidCredentials;
             }
             else
             {
@@ -219,13 +221,27 @@ namespace WFChatServer
                 }
             }
 
+            if (error == null)
+            {
+                lock (_clients)
+                {
+                    if (_userNames.Add(login.UserName)) //checked and taken under one lock, so two logins can't both get the name
+                    {
+                        client.UserName = login.UserName; //from now on HandleClientAsync frees the name when the connection ends
+                    }
+                    else
+                    {
+                        error = LoginError.AlreadyLoggedIn;
+                    }
+                }
+            }
+
             if (error != null)
             {
                 RaiseLog($"{client.Name}: login '{login.UserName}' rejected: {error}");
                 await client.Connection.SendAsync(new LoginResult(false, error)).ConfigureAwait(false);
                 return false;
             }
-            client.UserName = login.UserName;
             await client.Connection.SendAsync(new LoginResult(true)).ConfigureAwait(false); //the client must get its answer before any broadcast
             return true;
         }
@@ -249,6 +265,28 @@ namespace WFChatServer
                 RaiseLog($"{client.Name}: send failed ({ex.Message}), disconnecting");
                 client.Close(); //its receive loop ends with an error and does the cleanup
             }
+        }
+
+        /// <summary>
+        /// Line breaks, tabs and other control characters become spaces, so one message can't pretend to be
+        /// several lines from other users. Too long texts are cut to <see cref="SendText.MaxLength"/>.
+        /// </summary>
+        static string CleanText(string text)
+        {
+            if (text == null)
+            {
+                return "";
+            }
+            var chars = text.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (char.IsControl(chars[i]))
+                {
+                    chars[i] = ' ';
+                }
+            }
+            string clean = new string(chars).Trim();
+            return clean.Length > SendText.MaxLength ? clean.Substring(0, SendText.MaxLength) : clean;
         }
 
         ClientConnection[] TakeSnapshot()

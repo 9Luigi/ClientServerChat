@@ -24,17 +24,21 @@ namespace WFChat.Tests
         /// <summary>When set, every check throws it, like an unavailable database.</summary>
         public Exception FailWith { get; set; }
 
+        /// <summary>When set, "BOB" is accepted as "bob", like the case-insensitive database.</summary>
+        public bool AcceptAnyCase { get; set; }
+
         public LoginError? Authenticate(string userName, string password)
         {
             if (FailWith != null)
             {
                 throw FailWith;
             }
-            if (!_passwords.TryGetValue(userName, out string expected))
+            if (AcceptAnyCase)
             {
-                return LoginError.UserNotFound;
+                userName = userName.ToLowerInvariant();
             }
-            return expected == password ? null : LoginError.IncorrectPassword;
+            bool known = _passwords.TryGetValue(userName, out string expected);
+            return known && expected == password ? null : LoginError.InvalidCredentials;
         }
     }
 

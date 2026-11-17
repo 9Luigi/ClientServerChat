@@ -22,6 +22,7 @@ namespace WFChatClient
         {
             InitializeComponent();
             ApplyTheme();
+            tbSend.MaxLength = SendText.MaxLength; //the server cuts longer texts anyway
             _loginSize = this.ClientSize;
             ShowServerAddress();
         }
@@ -96,10 +97,10 @@ namespace WFChatClient
         {
             switch (error)
             {
-                case LoginError.UserNotFound:
-                    return "User is not found, try again";
-                case LoginError.IncorrectPassword:
-                    return "Incorrect password, try again";
+                case LoginError.InvalidCredentials:
+                    return "Incorrect user name or password, try again";
+                case LoginError.AlreadyLoggedIn:
+                    return "This user is already in the chat";
                 default:
                     return "Server error, try again later please";
             }

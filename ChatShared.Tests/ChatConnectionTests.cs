@@ -19,7 +19,7 @@ namespace ChatShared.Tests
         {
             new object[] { new LoginRequest("bob", "secret") },
             new object[] { new LoginResult(true) },
-            new object[] { new LoginResult(false, LoginError.IncorrectPassword) },
+            new object[] { new LoginResult(false, LoginError.InvalidCredentials) },
             new object[] { new SendText("hello") },
             new object[] { new ChatText("bob", "hello", SomeTime) },
             new object[] { new UserJoined("bob", SomeTime) },
@@ -41,11 +41,11 @@ namespace ChatShared.Tests
         [Fact]
         public async Task Wire_format_is_one_json_object_per_line()
         {
-            string wire = await WriteToWire(new LoginRequest("bob", "p w"), new LoginResult(false, LoginError.IncorrectPassword));
+            string wire = await WriteToWire(new LoginRequest("bob", "p w"), new LoginResult(false, LoginError.InvalidCredentials));
 
             Assert.Equal(
                 "{\"type\":\"login\",\"userName\":\"bob\",\"password\":\"p w\"}\n" +
-                "{\"type\":\"loginResult\",\"success\":false,\"error\":\"IncorrectPassword\"}\n",
+                "{\"type\":\"loginResult\",\"success\":false,\"error\":\"InvalidCredentials\"}\n",
                 wire);
         }
 

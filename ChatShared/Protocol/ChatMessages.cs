@@ -23,7 +23,11 @@ namespace ChatShared.Protocol
     public sealed record LoginResult(bool Success, LoginError? Error = null) : ChatMessage;
 
     /// <summary>Client → server: a chat message typed by the user.</summary>
-    public sealed record SendText(string Text) : ChatMessage;
+    public sealed record SendText(string Text) : ChatMessage
+    {
+        /// <summary>Longest text the server relays, in characters; the server cuts longer texts.</summary>
+        public const int MaxLength = 250;
+    }
 
     /// <summary>Server → clients: a chat message from <see cref="From"/>; <see cref="Time"/> is when the server received it.</summary>
     public sealed record ChatText(string From, string Text, DateTimeOffset Time) : ChatMessage;
@@ -34,11 +38,11 @@ namespace ChatShared.Protocol
     /// <summary>Server → clients: a user has disconnected.</summary>
     public sealed record UserLeft(string UserName, DateTimeOffset Time) : ChatMessage;
 
-    [JsonConverter(typeof(JsonStringEnumConverter<LoginError>))] //written as "IncorrectPassword", not as a number
+    [JsonConverter(typeof(JsonStringEnumConverter<LoginError>))] //written as "InvalidCredentials", not as a number
     public enum LoginError
     {
-        UserNotFound,
-        IncorrectPassword,
+        InvalidCredentials, //unknown user name or wrong password: deliberately one code, so nobody can find out which names exist
+        AlreadyLoggedIn, //this user name is already online
         ServerError
     }
 }
