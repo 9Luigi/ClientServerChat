@@ -59,6 +59,11 @@ namespace WFChat.UI
                     case Button button:
                         StyleSecondary(button);
                         break;
+                    case ComboBox comboBox:
+                        comboBox.BackColor = Surface;
+                        comboBox.ForeColor = Text;
+                        comboBox.FlatStyle = FlatStyle.Flat;
+                        break;
                 }
                 ApplyToChildren(control);
             }

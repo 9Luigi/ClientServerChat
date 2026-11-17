@@ -21,7 +21,7 @@ namespace WFChat.Tests
         public ChatServerTests()
         {
             _server = new ChatServer(_authenticator);
-            _server.Log += _log.Enqueue;
+            _server.Log += (level, text) => _log.Enqueue($"{level}: {text}");
             _server.MessageBroadcast += _broadcasts.Enqueue;
             _server.Start(IPAddress.Loopback, 0); //port 0: the system picks a free one
         }
@@ -96,6 +96,20 @@ namespace WFChat.Tests
             Assert.Equal(new LoginResult(false, LoginError.AlreadyLoggedIn), await second.ReceiveAsync());
             await second.AssertClosedByServerAsync();
             Assert.Equal(new[] { "bob" }, _server.GetOnlineUsers());
+        }
+
+        [Fact]
+        public async Task Login_and_logout_are_logged_as_Info()
+        {
+            TestClient bob = await LoginAsync("bob", "bob-pass");
+            TestClient alice = await LoginAsync("alice", "alice pass");
+            await bob.ReceiveAsync<UserJoined>();
+
+            alice.Dispose();
+            await bob.ReceiveAsync<UserLeft>();
+
+            Assert.Contains(_log, line => line.StartsWith("Info: bob logged in from 127.0.0.1:"));
+            Assert.Contains(_log, line => line == "Info: alice logged out");
         }
 
         [Fact]
@@ -192,7 +206,7 @@ namespace WFChat.Tests
             await client.SendAsync(new LoginRequest("bob", "bob-pass"));
 
             Assert.Equal(new LoginResult(false, LoginError.ServerError), await client.ReceiveAsync());
-            Assert.Contains(_log, line => line.Contains("database is down"));
+            Assert.Contains(_log, line => line.StartsWith("Critical:") && line.Contains("database is down"));
         }
 
         [Fact]

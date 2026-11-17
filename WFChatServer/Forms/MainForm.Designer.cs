@@ -41,7 +41,9 @@ namespace WFChatServer
             this.pConsole = new System.Windows.Forms.Panel();
             this.pConsoleFrame = new System.Windows.Forms.Panel();
             this.tbController = new System.Windows.Forms.TextBox();
+            this.pConsoleCaption = new System.Windows.Forms.Panel();
             this.lConsoleCaption = new System.Windows.Forms.Label();
+            this.cbLogLevel = new System.Windows.Forms.ComboBox();
             this.pCommandGap = new System.Windows.Forms.Panel();
             this.tbSendCommand = new System.Windows.Forms.TextBox();
             this.pButtons = new System.Windows.Forms.FlowLayoutPanel();
@@ -52,6 +54,7 @@ namespace WFChatServer
             this.pBody.SuspendLayout();
             this.pChatArea.SuspendLayout();
             this.pConsole.SuspendLayout();
+            this.pConsoleCaption.SuspendLayout();
             this.pButtons.SuspendLayout();
             this.pChatFrame.SuspendLayout();
             this.pConsoleFrame.SuspendLayout();
@@ -156,7 +159,7 @@ namespace WFChatServer
             // pConsole
             //
             this.pConsole.Controls.Add(this.pConsoleFrame);
-            this.pConsole.Controls.Add(this.lConsoleCaption);
+            this.pConsole.Controls.Add(this.pConsoleCaption);
             this.pConsole.Controls.Add(this.pCommandGap);
             this.pConsole.Controls.Add(this.tbSendCommand);
             this.pConsole.Controls.Add(this.pButtons);
@@ -190,15 +193,36 @@ namespace WFChatServer
             this.tbController.TextChanged += new System.EventHandler(this.tbController_TextChanged);
             this.tbController.Enter += new System.EventHandler(this.tbChatObsAndChatController_Enter);
             //
+            // pConsoleCaption
+            //
+            this.pConsoleCaption.Controls.Add(this.lConsoleCaption);
+            this.pConsoleCaption.Controls.Add(this.cbLogLevel);
+            this.pConsoleCaption.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pConsoleCaption.Location = new System.Drawing.Point(0, 0);
+            this.pConsoleCaption.Name = "pConsoleCaption";
+            this.pConsoleCaption.Padding = new System.Windows.Forms.Padding(0, 0, 0, 4);
+            this.pConsoleCaption.Size = new System.Drawing.Size(360, 30);
+            this.pConsoleCaption.TabIndex = 0;
+            //
             // lConsoleCaption
             //
-            this.lConsoleCaption.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lConsoleCaption.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lConsoleCaption.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.lConsoleCaption.Location = new System.Drawing.Point(0, 0);
             this.lConsoleCaption.Name = "lConsoleCaption";
-            this.lConsoleCaption.Size = new System.Drawing.Size(360, 26);
+            this.lConsoleCaption.Size = new System.Drawing.Size(220, 26);
             this.lConsoleCaption.TabIndex = 0;
             this.lConsoleCaption.Text = "Console";
+            //
+            // cbLogLevel
+            //
+            this.cbLogLevel.Dock = System.Windows.Forms.DockStyle.Right;
+            this.cbLogLevel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbLogLevel.Location = new System.Drawing.Point(220, 0);
+            this.cbLogLevel.Name = "cbLogLevel";
+            this.cbLogLevel.Size = new System.Drawing.Size(140, 25);
+            this.cbLogLevel.TabIndex = 1;
+            this.cbLogLevel.TabStop = false;
             //
             // pCommandGap
             //
@@ -278,6 +302,7 @@ namespace WFChatServer
             this.pHeader.ResumeLayout(false);
             this.pBody.ResumeLayout(false);
             this.pChatArea.ResumeLayout(false);
+            this.pConsoleCaption.ResumeLayout(false);
             this.pConsole.ResumeLayout(false);
             this.pConsole.PerformLayout();
             this.pButtons.ResumeLayout(false);
@@ -300,7 +325,9 @@ namespace WFChatServer
         private System.Windows.Forms.Panel pConsole;
         private System.Windows.Forms.Panel pConsoleFrame;
         private System.Windows.Forms.TextBox tbController;
+        private System.Windows.Forms.Panel pConsoleCaption;
         private System.Windows.Forms.Label lConsoleCaption;
+        private System.Windows.Forms.ComboBox cbLogLevel;
         private System.Windows.Forms.Panel pCommandGap;
         private System.Windows.Forms.TextBox tbSendCommand;
         private System.Windows.Forms.FlowLayoutPanel pButtons;

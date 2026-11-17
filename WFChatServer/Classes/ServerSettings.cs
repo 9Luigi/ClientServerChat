@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace WFChatServer
 {
-    /// <summary>Address and port the server listens on, stored in settings.xml next to the program.</summary>
+    /// <summary>Address and port the server listens on and the console log level, stored in settings.xml next to the program.</summary>
     [XmlRoot("Settings")] //root and element names match settings.xml files written by earlier versions
     public class ServerSettings
     {
@@ -22,6 +22,10 @@ namespace WFChatServer
 
         [XmlElement("port")]
         public int Port { get; set; }
+
+        /// <summary>Least important lines the console still shows. Missing in old settings.xml files: then Info.</summary>
+        [XmlElement("logLevel")]
+        public LogLevel ConsoleLogLevel { get; set; } = LogLevel.Info;
 
         /// <summary>Listen on all network interfaces of this machine.</summary>
         public static ServerSettings CreateDefault()

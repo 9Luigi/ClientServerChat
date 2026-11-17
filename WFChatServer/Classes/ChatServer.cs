@@ -35,8 +35,8 @@ namespace WFChatServer
         /// <summary>Every message sent to all clients: <see cref="UserJoined"/>, <see cref="ChatText"/>, <see cref="UserLeft"/>.</summary>
         public event Action<ChatMessage> MessageBroadcast;
 
-        /// <summary>Diagnostics for the operator: rejected logins, protocol violations, network errors.</summary>
-        public event Action<string> Log;
+        /// <summary>Diagnostics for the operator: logins and logouts, rejected logins, protocol violations, network errors.</summary>
+        public event Action<LogLevel, string> Log;
 
         /// <summary>Address the server listens on; useful when started with port 0.</summary>
         public IPEndPoint LocalEndPoint => (IPEndPoint)_listener?.LocalEndpoint;
@@ -98,7 +98,7 @@ namespace WFChatServer
                 {
                     if (!stopping.IsCancellationRequested)
                     {
-                        RaiseLog("Stopped accepting connections: " + ex.Message);
+                        RaiseLog(LogLevel.Critical, "Stopped accepting connections: " + ex.Message);
                     }
                     return;
                 }
@@ -140,7 +140,7 @@ namespace WFChatServer
                     }
                     else
                     {
-                        RaiseLog($"{client.Name}: unexpected {message.GetType().Name} ignored");
+                        RaiseLog(LogLevel.Error, $"{client.Name}: unexpected {message.GetType().Name} ignored");
                     }
                 }
             }
@@ -151,12 +151,12 @@ namespace WFChatServer
             {
                 if (!stopping.IsCancellationRequested)
                 {
-                    RaiseLog($"{client.Name}: {ex.Message}");
+                    RaiseLog(LogLevel.Error, $"{client.Name}: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                RaiseLog($"{client.Name}: unexpected error: {ex}");
+                RaiseLog(LogLevel.Critical, $"{client.Name}: unexpected error: {ex}");
             }
             finally
             {
@@ -171,6 +171,7 @@ namespace WFChatServer
                 client.Close();
                 if (joined && !stopping.IsCancellationRequested)
                 {
+                    RaiseLog(LogLevel.Info, $"{client.UserName} logged out");
                     await BroadcastAsync(new UserLeft(client.UserName, DateTimeOffset.Now)).ConfigureAwait(false);
                 }
             }
@@ -189,7 +190,7 @@ namespace WFChatServer
                 }
                 catch (OperationCanceledException) when (!stopping.IsCancellationRequested)
                 {
-                    RaiseLog($"{client.Name}: no login within {LoginTimeout.TotalSeconds:0.#} s, disconnected");
+                    RaiseLog(LogLevel.Error, $"{client.Name}: no login within {LoginTimeout.TotalSeconds:0.#} s, disconnected");
                     return false;
                 }
             }
@@ -199,7 +200,7 @@ namespace WFChatServer
             }
             if (!(first is LoginRequest login))
             {
-                RaiseLog($"{client.Name}: first message was {first.GetType().Name} instead of login, disconnected");
+                RaiseLog(LogLevel.Error, $"{client.Name}: first message was {first.GetType().Name} instead of login, disconnected");
                 return false;
             }
 
@@ -216,7 +217,7 @@ namespace WFChatServer
                 }
                 catch (Exception ex)
                 {
-                    RaiseLog($"Cannot check the login of '{login.UserName}': {ex.Message}");
+                    RaiseLog(LogLevel.Critical, $"Cannot check the login of '{login.UserName}': {ex.Message}");
                     error = LoginError.ServerError;
                 }
             }
@@ -238,11 +239,12 @@ namespace WFChatServer
 
             if (error != null)
             {
-                RaiseLog($"{client.Name}: login '{login.UserName}' rejected: {error}");
+                RaiseLog(LogLevel.Error, $"{client.Name}: login '{login.UserName}' rejected: {error}");
                 await client.Connection.SendAsync(new LoginResult(false, error)).ConfigureAwait(false);
                 return false;
             }
             await client.Connection.SendAsync(new LoginResult(true)).ConfigureAwait(false); //the client must get its answer before any broadcast
+            RaiseLog(LogLevel.Info, $"{client.UserName} logged in from {client.RemoteEndPoint}");
             return true;
         }
 
@@ -262,7 +264,7 @@ namespace WFChatServer
             }
             catch (Exception ex) when (IsConnectionError(ex))
             {
-                RaiseLog($"{client.Name}: send failed ({ex.Message}), disconnecting");
+                RaiseLog(LogLevel.Error, $"{client.Name}: send failed ({ex.Message}), disconnecting");
                 client.Close(); //its receive loop ends with an error and does the cleanup
             }
         }
@@ -302,31 +304,33 @@ namespace WFChatServer
             return ex is IOException || ex is SocketException || ex is ObjectDisposedException || ex is InvalidDataException;
         }
 
-        void RaiseLog(string text)
+        void RaiseLog(LogLevel level, string text)
         {
-            Log?.Invoke(text);
+            Log?.Invoke(level, text);
         }
 
         /// <summary>One connected client: its socket, protocol connection and, after login, its user name.</summary>
         sealed class ClientConnection
         {
             readonly TcpClient _tcp;
-            readonly string _remoteEndPoint;
 
             public ClientConnection(TcpClient tcp)
             {
                 _tcp = tcp;
-                _remoteEndPoint = tcp.Client.RemoteEndPoint?.ToString();
+                RemoteEndPoint = tcp.Client.RemoteEndPoint?.ToString();
                 Connection = new ChatConnection(tcp.GetStream());
             }
 
             public ChatConnection Connection { get; }
 
+            /// <summary>Address and port of the client, e.g. "192.168.0.7:51234".</summary>
+            public string RemoteEndPoint { get; }
+
             /// <summary>Null until the login succeeds.</summary>
             public string UserName { get; set; }
 
             /// <summary>For log messages: the user name, or the address before login.</summary>
-            public string Name => UserName ?? _remoteEndPoint;
+            public string Name => UserName ?? RemoteEndPoint;
 
             /// <summary>Closes the socket; a pending receive or send fails. Safe to call more than once.</summary>
             public void Close()

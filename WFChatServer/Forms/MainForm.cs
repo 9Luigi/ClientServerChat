@@ -14,10 +14,12 @@ namespace WFChatServer
         readonly int _consoleWidth;
         int _hiddenChatWidth;
         ChatServer _server;
+        LogLevel _consoleLevel = LogLevel.Info;
 
         public MainForm()
         {
             InitializeComponent();
+            cbLogLevel.Items.AddRange(new object[] { "Critical only", "Errors", "All events", "All + chat" }); //item index = (int)LogLevel
             ApplyTheme();
             _consoleWidth = pConsole.Width;
         }
@@ -42,8 +44,11 @@ namespace WFChatServer
             if (settings == null)
             {
                 settings = ServerSettings.CreateDefault();
-                AppendControllerLine($"Cannot load settings, default was set: {settings.IpAddress}:{settings.Port}");
+                AppendLog(LogLevel.Error, $"Cannot load settings, default was set: {settings.IpAddress}:{settings.Port}");
             }
+            _consoleLevel = settings.ConsoleLogLevel;
+            cbLogLevel.SelectedIndex = (int)_consoleLevel;
+            cbLogLevel.SelectedIndexChanged += cbLogLevel_SelectedIndexChanged; //subscribed only now, so showing the saved level doesn't save it again
 
             _server = new ChatServer(new DBHandler());
             _server.MessageBroadcast += Server_MessageBroadcast;
@@ -53,11 +58,12 @@ namespace WFChatServer
                 _server.Start(IPAddress.Parse(settings.IpAddress), settings.Port);
                 lStatus.Text = "Listening on " + _server.LocalEndPoint;
                 AppendChatNotice("server started on " + _server.LocalEndPoint);
+                AppendLog(LogLevel.Info, "Server started on " + _server.LocalEndPoint);
             }
             catch (SocketException ex)
             {
                 lStatus.Text = "Not running: check the settings";
-                AppendControllerLine($"Cannot start the server on {settings.IpAddress}:{settings.Port}: {ex.Message}. Change the settings and restart.");
+                AppendLog(LogLevel.Critical, $"Cannot start the server on {settings.IpAddress}:{settings.Port}: {ex.Message}. Change the settings and restart.");
             }
         }
 
@@ -74,12 +80,16 @@ namespace WFChatServer
             {
                 ChatView.AppendMessage(rtbChatObs, message);
                 WriteLog(ChatMessageText.Format(message));
+                if (message is ChatText text)
+                {
+                    AppendLog(LogLevel.Message, $"{text.From}: {text.Text}"); //joins and leaves come as Info through Server_Log
+                }
             });
         }
 
-        void Server_Log(string text)
+        void Server_Log(LogLevel level, string text)
         {
-            RunOnUiThread(() => AppendControllerLine(text));
+            RunOnUiThread(() => AppendLog(level, text));
         }
 
         /// <summary>Controls may only be touched from the UI thread; BeginInvoke queues the action there.</summary>
@@ -119,10 +129,36 @@ namespace WFChatServer
             }
             catch (IOException ex)
             {
-                AppendControllerLine("Cannot write the log: " + ex.Message);
+                AppendLog(LogLevel.Error, "Cannot write the log: " + ex.Message);
             }
         }
 
+        /// <summary>A console line with the time and the level; skipped when less important than the level chosen above the console.</summary>
+        void AppendLog(LogLevel level, string text)
+        {
+            if (level > _consoleLevel)
+            {
+                return;
+            }
+            AppendControllerLine($"{DateTime.Now:HH:mm:ss} {LevelTag(level)} {text}");
+        }
+
+        static string LevelTag(LogLevel level)
+        {
+            switch (level)
+            {
+                case LogLevel.Critical:
+                    return "CRIT ";
+                case LogLevel.Error:
+                    return "ERROR";
+                case LogLevel.Info:
+                    return "INFO ";
+                default:
+                    return "MSG  ";
+            }
+        }
+
+        /// <summary>Command answers (help, users) go here directly: they are shown whatever the level.</summary>
         void AppendControllerLine(string text)
         {
             tbController.AppendText(text + Environment.NewLine);
@@ -164,6 +200,23 @@ namespace WFChatServer
                 pChatArea.Visible = true;
                 this.Width += _hiddenChatWidth;
                 bCloseOpenChatTB.Text = "Hide chat";
+            }
+        }
+
+        /// <summary>Takes effect at once for new lines and is remembered in settings.xml.</summary>
+        private void cbLogLevel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _consoleLevel = (LogLevel)cbLogLevel.SelectedIndex;
+            try
+            {
+                //loaded again, not kept from startup: the address may have been changed in the settings window since then
+                ServerSettings settings = ServerSettings.Load(ServerSettings.DefaultPath) ?? ServerSettings.CreateDefault();
+                settings.ConsoleLogLevel = _consoleLevel;
+                settings.Save(ServerSettings.DefaultPath);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                AppendLog(LogLevel.Error, "Cannot save the log level: " + ex.Message);
             }
         }
 
